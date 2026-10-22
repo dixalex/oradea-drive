@@ -13,7 +13,7 @@ import { nightK } from '../../../render/daylight.js';
 export const TABLE = [
   { id: 'viatanoua', bld: 420863618, door: [-36.5, -1066.6] }, // before the yard gate east of the house (viatanoua/house.js GATE), the way in
   { id: 'mobiversal', bld: 3000001278, street: 'Strada Thurzó Sándor' }, // no OSM outline: the generator's house round the pin
-  { id: 'casaminunata', bld: 436834224, street: 'Strada Traian Lalescu', sign: 'CASA MINUNATĂ' },
+  { id: 'casaminunata', bld: 436834224, door: [-2174.9, -2073.0] }, // before the open street gate into the courtyard (casaminunata/grounds.js GATES.street)
   // the hand-built churches (sites/baptist): the ring in front of the real entrance – BBSO's concrete entrance block on the
   // south forecourt (bbsoToMap(41, 48.5)), Emanuel's main doors through the fence's gap on the boulevard (22°, 27.5 m from the drum's centre)
   { id: 'bbso', bld: 1264556370, door: [1208.5, 1715.1] },

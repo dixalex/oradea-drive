@@ -33,7 +33,7 @@ for (const e of TABLE) {
   const rings = e.ring ? [e.ring] : map.buildings.filter((b) => b.id === e.bld).map((b) => { const P = []; for (let i = 0; i < b.p.length; i += 2) P.push([b.p[i], b.p[i + 1]]); return P; });
   const wall = Math.min(...rings.flatMap((P) => P.map((p, i) => { const q = P[(i + 1) % P.length], dx = q[0] - p[0], dz = q[1] - p[1], L = dx * dx + dz * dz;
     const t = L ? Math.max(0, Math.min(1, ((d.x - p[0]) * dx + (d.z - p[1]) * dz) / L)) : 0; return Math.hypot(p[0] + t * dx - d.x, p[1] + t * dz - d.z); })));
-  ok(!rings.some((P) => inPoly(P, d.x, d.z)) && wall > 2 && wall < (e.door ? 15 : 4.5), `${e.id}: door outside the building (${rings.length} part(s)), ${wall.toFixed(1)} m from the wall`);
+  ok(!rings.some((P) => inPoly(P, d.x, d.z)) && wall > 2 && wall < (e.door ? 30 : 4.5), `${e.id}: door outside the building (${rings.length} part(s)), ${wall.toFixed(1)} m from the wall`);
   ok(Number.isFinite(d.y) && site.clear(d.x, d.z), `${e.id}: door on the ground, trees kept off`);
 }
 console.log(fails ? `${fails} FAILED` : 'all passed');
