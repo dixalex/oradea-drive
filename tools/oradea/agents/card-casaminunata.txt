@@ -1,0 +1,29 @@
+Follow /Users/alexandertinyaev/Sites/oradea-drive/tools/oradea/agents/BRIEF.md (read it fully first, especially the Memory rule). Two updates to it: (1) use the screenshot tools in /private/tmp/claude-501/-Users-alexandertinyaev-Sites-oradea-drive/39090392-b810-46f1-95c8-0622a60f1534/scratchpad/shot/ (shot.mjs, peek.mjs: playwright is installed there; same lock and memory wait), with --port 5175 (the dev server is running); (2) the city's buildings now stand at measured Copernicus heights, so the neighbours' heights are roughly right.
+
+Slug: casaminunata
+
+Casa Minunată (Fundația Casa Minunată, https://www.casaminunata.org) is an inclusive private nursery, kindergarten and
+after-school in Oradea, open since 1994. It also hosts a Ukrainian kindergarten, a project of Wycliffe Romania (Drumul Vieții,
+the NGO that runs this game, is a partner there). It is a game partner. OSM way 436834224 (building=kindergarten, name Casa Minunată, addr Strada Cosminului 1; the
+foundation's own site gives Str. Traian Lalescu 47; 1,436 m2). Today the city generator draws it as a plain public block.
+Rebuild it as it really looks today, from photos: the walls, windows, doors, roof, the foundation's own name lettering or
+logo if it is on the building, the entrance, and the grounds: the garden, the playground, the yard, the fence and gates
+toward the street. No people or children in the model.
+
+Sources to try, in order: the photos on casaminunata.org (galleries, about, contact pages), its Facebook / Instagram,
+Mapillary street-level images near 47.03 N 21.90 E on Strada Traian Lalescu and Strada Cosminului (open data, fine as a
+reference), the Esri World Imagery aerial (as the brief describes), Google Maps' place photos if you can reach them.
+Check the OSM footprint against the aerial: if 436834224 does not match the real building (merged with a neighbour, cut
+short, missing a wing), say so and build to the aerial, keeping the OSM id in SITE.skip.
+
+It is a partner, so two things already exist and stay: places.js has the 'casaminunata' entry (kind 'ad', the card), and
+src/world/oradea/sites/partners.js places its door (a pink ring 3.2 m out from the wall that faces Strada Traian Lalescu)
+and a lit board 'CASA MINUNATĂ' over the wall. The existing-file edits you may make, both in sites/partners.js TABLE on the
+casaminunata line only: drop `sign` once your model carries the real lettering; change `street` if the real entrance
+faces another road (say so). Your site must not export `partners`. Keep the ring spot drivable: no collider within 4 m of
+the door the test prints (node tests/oradea-partners.test.mjs) unless the real fence or gate is there; then say so and
+suggest a better door spot. Light the entrance and any lettering at night by nightK.
+
+Budget: <= 15k vertices, <= 6 draw calls. Test: tests/oradea-casaminunata.test.mjs (skip id exists, budget, no NaN,
+colliders, clear() keeps trees off the building and grounds). Phone peek: a partner, so no peek line is needed. Report as
+the brief says, plus which photos the model follows and what is a guess.

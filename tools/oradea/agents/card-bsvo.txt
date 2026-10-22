@@ -1,0 +1,27 @@
+Follow /Users/alexandertinyaev/Sites/oradea-drive/tools/oradea/agents/BRIEF.md (read it fully first, especially the Memory rule). Two updates to it: (1) use the screenshot tools in /private/tmp/claude-501/-Users-alexandertinyaev-Sites-oradea-drive/39090392-b810-46f1-95c8-0622a60f1534/scratchpad/shot/ (shot.mjs, peek.mjs: playwright is installed there; same lock and memory wait), with --port 5175 (the dev server is running); (2) the city's buildings now stand at measured Copernicus heights, so the neighbours' heights are roughly right.
+
+Slug: bsvo
+
+BSVO, Biserica Baptistă Stânca Veacurilor Oradea (https://bsvo.ro), a Baptist church at Calea Borșului 3, Oradea. It is a
+game partner. Two untagged OSM buildings stand there: 717082635 (87 m2, the city generator draws a house; the church's map
+pins fall here) and 717082633 (433 m2, 36 m south-west, drawn as a plain public block; possibly the church hall). Find
+which is the church from photos and the aerial, then rebuild the church (and the other building too if it belongs to the
+church) as it really looks today: the walls, windows, doors, roof, the church's own name lettering or cross if it is on
+the building (allowed), the entrance, and the yard toward Calea Borșului (paving, parking, fence, gate, steps).
+
+Sources to try, in order: the photos on bsvo.ro, the church's Facebook page («Biserica Baptistă Stânca Veacurilor Oradea
+BSVO») and YouTube thumbnails, Mapillary street-level images on Calea Borșului near the number 3, the Esri World Imagery
+aerial (as the brief describes), Google Maps' place photos if you can reach them. Check both OSM footprints against the
+aerial; build to the aerial where they differ, keeping the OSM ids in SITE.skip.
+
+It is a partner, so two things already exist and stay: places.js has the 'bsvo' entry (kind 'ad', the card, bld
+[717082635]), and src/world/oradea/sites/partners.js places its door (a pink ring 3.2 m out from the wall of 717082635
+that faces Calea Borșului). The existing-file edits you may make: if the church is 717082633, change the bsvo line's `bld`
+in sites/partners.js TABLE and the 'bsvo' entry's `bld` in places.js (say so); set `street` there if its entrance faces
+another road. Your site must not export `partners`. Keep the ring spot drivable: no collider within 4 m of the door the
+test prints (node tests/oradea-partners.test.mjs) unless a real fence or gate is there; then say so and suggest a better
+door spot. Light the entrance and any lettering at night by nightK.
+
+Budget: <= 15k vertices, <= 6 draw calls. Test: tests/oradea-bsvo.test.mjs (skip ids exist, budget, no NaN, colliders,
+clear() keeps trees off the buildings and yard). Phone peek: a partner, so no peek line is needed. Report as the brief
+says, plus which photos the model follows and what is a guess.

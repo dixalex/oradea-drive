@@ -1,0 +1,35 @@
+Follow /Users/alexandertinyaev/Sites/oradea-drive/tools/oradea/agents/BRIEF.md (read it fully first, especially the Memory rule). Two updates to it: (1) use the screenshot tools in /private/tmp/claude-501/-Users-alexandertinyaev-Sites-oradea-drive/39090392-b810-46f1-95c8-0622a60f1534/scratchpad/shot/ (shot.mjs, peek.mjs: playwright is installed there; same lock and memory wait), with --port 5175 (the dev server is running); (2) the city's buildings now stand at measured Copernicus heights, so the neighbours' heights are roughly right.
+
+Slug: mobiversal
+
+Mobiversal (https://www.mobiversal.com) is an Oradea software company that supports Drumul Vieții, the NGO that runs this
+game. It is a game partner. Address: Strada Thurzó Sándor 40 (the same address as Drumul Vieții). OSM has no building
+outline there. Mobiversal's own Google pin, 47.0347938 N 21.9316845 E, falls inside the city generator's building
+3000001278 (a one-storey house, 328 m2, from the Overture extra buildings); 3000001284 (a three-storey block, 203 m2) is
+28 m north. Find the real building from photos and the aerial: it may be either one or neither. Rebuild it as it really
+looks today: the walls, windows, doors, roof, the company's own lettering or logo if it is on the building (allowed), the
+entrance, and the yard toward Strada Thurzó Sándor (parking, fence, gate, whatever the photos show).
+
+Sources to try, in order: the photos on mobiversal.com (about, careers / join-us, contact), its LinkedIn / Facebook /
+Instagram, Mapillary street-level images on Strada Thurzó Sándor, the Esri World Imagery aerial (as the brief describes),
+Google Maps' place photos if you can reach them.
+
+Ids 3e9 and up are not stable: tools/cherkasy/build_map.mjs numbers the Overture buildings in file order, so a fresh
+Overture download can shift them. So: draw your own outline (export it as MOBIVERSAL_RING in world metres; places.js may
+carry it as the 'mobiversal' entry's `ring`, a flat [x0, z0, x1, z1, ...] list as in map_buildings' `p`, in place of
+`bld: [3000001278]`), put the generator buildings you replace in
+SITE.skip, and have your test check that every skipped id's footprint centre lies inside or within 3 m of your outline, so
+a shifted id fails loudly.
+
+It is a partner, so two things already exist and stay: places.js has the 'mobiversal' entry (kind 'ad', the card), and
+src/world/oradea/sites/partners.js places its door (a pink ring 3.2 m out from the wall that faces Strada Thurzó Sándor).
+The existing-file edits you may make: in sites/partners.js TABLE, the mobiversal line only: replace `bld: 3000001278` with
+`ring: MOBIVERSAL_RING` (TABLE accepts a ring of world points, flat or as [x, z] pairs; import it from your module) and set `street` if
+the entrance faces another road; in places.js, the 'mobiversal' entry's bld / ring only. Your site must not export
+`partners`. Keep the ring spot drivable: no collider within 4 m of the door the test prints (node
+tests/oradea-partners.test.mjs) unless a real fence or gate is there; then say so. Light the entrance and any lettering
+at night by nightK.
+
+Budget: <= 15k vertices, <= 6 draw calls. Test: tests/oradea-mobiversal.test.mjs (skip ids inside the outline, budget,
+no NaN, colliders, clear() keeps trees off the building and yard). Phone peek: a partner, so no peek line is needed.
+Report as the brief says, plus which photos the model follows and what is a guess.

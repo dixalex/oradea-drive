@@ -1,7 +1,7 @@
 // Headless checks for Oradea's Baptist churches (src/world/oradea/sites/baptist.js) on the compiled map: node tests/oradea-baptist.test.mjs
 // Every OSM way / relation the site replaces is in map_buildings.json, the terrain is levelled under Emanuel and BBSO, the site builds
 // in budget with no NaN and one named root group per church, the two big churches stand at their real heights, each small church has
-// its three meshes, the lots keep generated trees off, and the two sights are in places.js.
+// its three meshes, the lots keep generated trees off, and the two churches are in places.js (as partners).
 // Skipped without the Oradea map.
 import { readFileSync, existsSync } from 'node:fs';
 import * as THREE from 'three';
@@ -39,11 +39,11 @@ for (const c of CHAPELS) {
   ok(b && p.length / 2 === c.ring.length && c.ring.every((q, i) => Math.abs(q[0] - p[2 * i]) < 0.06 && Math.abs(q[1] - p[2 * i + 1]) < 0.06), `${c.slug}: ring matches OSM ${c.id}`);
 }
 
-// the places: two new sights with real building ids, not already in places.js
+// the places: the two churches are partners (kind 'ad', sites/partners.js gives their doors) with real building ids
 const SIGHTS = PLACES.filter((q) => q.id === 'emanuel' || q.id === 'bbso'); // moved into places.js
 ok(SITE.places.length === 0 && SIGHTS.length === 2, `places.js lists ${SIGHTS.map((q) => q.id).join(', ')}`);
 ok(new Set(PLACES.map((q) => q.id)).size === PLACES.length, 'place ids are unique');
-for (const q of SIGHTS) ok(q.kind === 'sight' && q.icon && q.name && q.note && q.bld?.every((id) => byId(id)), `${q.id}: kind, icon, name, note, bld ids in the map`);
+for (const q of SIGHTS) ok(q.kind === 'ad' && q.icon && q.name && q.note && q.bld?.every((id) => byId(id)), `${q.id}: kind, icon, name, note, bld ids in the map`);
 
 // the terrain: flat under Emanuel's drum and under BBSO after shape()
 const spread = (pts) => { let lo = 1e9, hi = -1e9; for (const [x, z] of pts) { const h = hf.heightAt(x, z); lo = Math.min(lo, h); hi = Math.max(hi, h); } return hi - lo; };

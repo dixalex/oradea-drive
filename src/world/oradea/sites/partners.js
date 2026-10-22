@@ -1,8 +1,10 @@
 // OWNER: oradea. The partners' doors (game/partners.js draws the pink ring there and slides in the card of the places.js
 // entry with the same id) and, where the building is the city generator's, a lit name board over its shopfront that
 // covers the generic shop names, brightening as the car comes near (glow) and after dusk (nightK). A hand-built site's
-// building (Emanuel, BBSO) gets the ring only. A new partner is a TABLE line plus its places.js entry.
-//   TABLE: { id, bld (OSM id), street? (the road its door faces; else the nearest named road), sign? (board text) }
+// building (Emanuel, BBSO) and a house (no shop band) get the ring only. A new partner is a TABLE line plus its places.js entry.
+//   TABLE: { id, bld (OSM id) | ring (world metres, [[x, z], …] or flat: a building OSM lacks, as a hand-built site draws it),
+//            street? (the road its door faces; else the nearest named road), door? ([x, z]: a hand-built site's entrance,
+//            in place of the wall search), sign? (board text) }
 // Site contract of src/world/oradea/city.js: SITE { id, label, skip, places, ground, build(base) -> { update, clear,
 // footprints, partners, stats } }.
 import * as THREE from 'three';
@@ -10,6 +12,13 @@ import { nightK } from '../../../render/daylight.js';
 
 export const TABLE = [
   { id: 'viatanoua', bld: 420863618, street: 'Strada Nicolae Jiga', sign: 'VIAȚA NOUĂ · BCUO' },
+  { id: 'mobiversal', bld: 3000001278, street: 'Strada Thurzó Sándor' }, // no OSM outline: the generator's house round the pin
+  { id: 'casaminunata', bld: 436834224, street: 'Strada Traian Lalescu', sign: 'CASA MINUNATĂ' },
+  // the hand-built churches (sites/baptist): the ring in front of the real entrance – BBSO's concrete entrance block on the
+  // south forecourt (bbsoToMap(41, 48.5)), Emanuel's main doors through the fence's gap on the boulevard (22°, 27.5 m from the drum's centre)
+  { id: 'bbso', bld: 1264556370, door: [1208.5, 1715.1] },
+  { id: 'emanuel', bld: 3530253, door: [-868.5, 332.8] },
+  { id: 'bsvo', bld: 717082635, street: 'Calea Borșului' },
 ];
 
 const DOOR_OUT = 3.2, BOARD_H = 0.8; // m: the ring out from the wall; the board's height (the facade's band is 0.75 m)
@@ -50,24 +59,26 @@ export const SITE = {
   build(base) {
     const { root, map } = base;
     const heightAt = base.ground?.heightAt ?? base.heightAt;
-    const byId = new Map((map.buildings ?? []).map((o) => [o.id, o]));
+    const area = (o) => { let a = 0; for (let i = 0, n = o.p.length; i < n; i += 2) { const j = (i + 2) % n; a += o.p[i] * o.p[j + 1] - o.p[j] * o.p[i + 1]; } return Math.abs(a) / 2; };
+    const byId = new Map(); // a multipolygon comes as several parts with one id: its largest part holds the door
+    for (const o of map.buildings ?? []) { const had = byId.get(o.id); if (!had || area(o) > area(had)) byId.set(o.id, o); }
     const partners = {}, doors = [], mats = [], near = {}, stats = { placed: [], missing: [] };
     for (const e of TABLE) {
-      const b = byId.get(e.bld);
+      const b = e.ring ? { p: e.ring.flat() } : byId.get(e.bld);
       if (!b) { stats.missing.push(e.id); continue; }
       const [cx, cz] = [b.p[0], b.p[1]];
       const named = (map.roads ?? []).filter((r) => r.n && (e.street ? r.n === e.street : true));
       // without a street: the named roads within 120 m of the building
       const roads = e.street ? named : named.filter((r) => { for (let i = 0; i < r.p.length; i += 2) if (Math.hypot(r.p[i] - cx, r.p[i + 1] - cz) < 120) return true; return false; });
-      const w = placeDoor(b, roads);
-      if (!w) { stats.missing.push(e.id); continue; }
-      const door = new THREE.Vector3(w.mx + w.nx * DOOR_OUT, 0, w.mz + w.nz * DOOR_OUT);
+      const w = e.door ? null : placeDoor(b, roads);
+      if (!w && !e.door) { stats.missing.push(e.id); continue; }
+      const door = e.door ? new THREE.Vector3(e.door[0], 0, e.door[1]) : new THREE.Vector3(w.mx + w.nx * DOOR_OUT, 0, w.mz + w.nz * DOOR_OUT);
       door.y = heightAt(door.x, door.z);
       doors.push(door);
       near[e.id] = 0;
       partners[e.id] = { door, glow(k) { near[e.id] = Math.max(0, Math.min(1, k)); } };
-      stats.placed.push({ id: e.id, door: [door.x, door.z], wall: w.len });
-      if (!e.sign || typeof document === 'undefined') continue;
+      stats.placed.push({ id: e.id, door: [door.x, door.z], wall: w?.len ?? 0 });
+      if (!e.sign || !w || typeof document === 'undefined') continue;
 
       // the name board: painted once at its own aspect, lit by glow / night
       const bw = w.len - 0.3, CH = 160, cv = Object.assign(document.createElement('canvas'), { width: Math.min(4096, Math.round(CH * bw / BOARD_H)), height: CH });
