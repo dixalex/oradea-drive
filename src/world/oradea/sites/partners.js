@@ -9,10 +9,11 @@
 // footprints, partners, stats } }.
 import * as THREE from 'three';
 import { nightK } from '../../../render/daylight.js';
+import { MOBIVERSAL_RING } from './mobiversal/plan.js'; // the plan only, not the whole site
 
 export const TABLE = [
   { id: 'viatanoua', bld: 420863618, door: [-36.5, -1066.6] }, // before the yard gate east of the house (viatanoua/house.js GATE), the way in
-  { id: 'mobiversal', bld: 3000001278, street: 'Strada Thurzó Sándor' }, // no OSM outline: the generator's house round the pin
+  { id: 'mobiversal', ring: MOBIVERSAL_RING, street: 'Strada Thurzó Sándor' }, // no OSM outline: the hand-built house (sites/mobiversal.js) draws its own
   { id: 'casaminunata', bld: 436834224, door: [-2174.9, -2073.0] }, // before the open street gate into the courtyard (casaminunata/grounds.js GATES.street)
   // the hand-built churches (sites/baptist): the ring in front of the real entrance – BBSO's concrete entrance block on the
   // south forecourt (bbsoToMap(41, 48.5)), Emanuel's main doors through the fence's gap on the boulevard (22°, 27.5 m from the drum's centre)
@@ -59,6 +60,8 @@ export const SITE = {
   build(base) {
     const { root, map } = base;
     const heightAt = base.ground?.heightAt ?? base.heightAt;
+    // the ring stands on what is drawn: land is 0.15 m over heightAt (ground.js GY.LAND), so a ring at heightAt hid under the grass
+    const surfaceAt = base.ground?.terrainHeight ?? heightAt;
     const area = (o) => { let a = 0; for (let i = 0, n = o.p.length; i < n; i += 2) { const j = (i + 2) % n; a += o.p[i] * o.p[j + 1] - o.p[j] * o.p[i + 1]; } return Math.abs(a) / 2; };
     const byId = new Map(); // a multipolygon comes as several parts with one id: its largest part holds the door
     for (const o of map.buildings ?? []) { const had = byId.get(o.id); if (!had || area(o) > area(had)) byId.set(o.id, o); }
@@ -73,7 +76,7 @@ export const SITE = {
       const w = e.door ? null : placeDoor(b, roads);
       if (!w && !e.door) { stats.missing.push(e.id); continue; }
       const door = e.door ? new THREE.Vector3(e.door[0], 0, e.door[1]) : new THREE.Vector3(w.mx + w.nx * DOOR_OUT, 0, w.mz + w.nz * DOOR_OUT);
-      door.y = heightAt(door.x, door.z);
+      door.y = surfaceAt(door.x, door.z);
       doors.push(door);
       near[e.id] = 0;
       partners[e.id] = { door, glow(k) { near[e.id] = Math.max(0, Math.min(1, k)); } };

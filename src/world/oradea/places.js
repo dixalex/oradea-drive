@@ -18,7 +18,7 @@ export const PLACES = [
       t('BCUO, biserica ucraineană: joia la 18:00', 'BCUO, the Ukrainian church: Thursdays at 18:00'),
       t('BCUO e administrată de asociația Drumul Vieții', 'BCUO is run by the Drumul Vieții association'),
       'viatanoua.ro · bcuo.ro'] },
-  { id: 'mobiversal', kind: 'ad', icon: '💻', bld: [3000001278], name: 'Mobiversal',
+  { id: 'mobiversal', kind: 'ad', icon: '💻', ring: [1330, 1850.4, 1331.4, 1870.5, 1348.6, 1869.3, 1348.3, 1864.7, 1346.5, 1864.8, 1345.5, 1849.3], name: 'Mobiversal', // sites/mobiversal.js MOBIVERSAL_RING
     note: t('Companie de software · Str. Thurzó Sándor 40', 'Software company · Str. Thurzó Sándor 40'),
     url: 'https://www.mobiversal.com/?utm_source=oradea.drumulvietii.ro',
     pitch: [t('Companie de software din Oradea, de peste 15 ani', 'Oradea software company, 15+ years'),
