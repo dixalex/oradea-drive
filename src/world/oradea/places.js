@@ -1,11 +1,23 @@
-// Oradea's named places for both maps, in the shape of cherkasy/places.js PLACES: { id, kind: 'sight' | 'improved',
-// name, note?, icon, bld?: [OSM building ids], ll?: [lat, lon], xz?: [x, z], ring? }. Ids must not reuse a Cherkasy
+// Oradea's named places for both maps, in the shape of cherkasy/places.js PLACES: { id, kind: 'sight' | 'improved' | 'ad',
+// name, note?, icon, bld?: [OSM building ids], ll?: [lat, lon], xz?: [x, z], ring? }; a partner ('ad') adds url and pitch
+// (the card's lines, the first one its headline) and gets its door from a site's `partners` (sites/viatanoua.js). Ids must not reuse a Cherkasy
 // place id (ui/peek3d.js keys its hand-built models by id). Sights count toward the explore quest (game/explore.js):
 // finding them all unlocks the Roadster. Names and notes follow the player's language (src/i18n.js).
 import { t } from '../../i18n.js';
 
 const sight = (id, icon, bld, name, note) => ({ id, kind: 'sight', icon, bld, name, note });
 export const PLACES = [
+  // partners: a pink badge, a ring at the door and a card in the game (game/partners.js), a teleport target on the big map
+  { id: 'viatanoua', kind: 'ad', icon: '⛪', bld: [420863618], name: 'Viața Nouă · BCUO',
+    note: t('Două biserici · Str. Nicolae Jiga 25', 'Two churches · Str. Nicolae Jiga 25'),
+    url: 'https://bcuo.ro/?utm_source=oradea.drumulvietii.ro',
+    pitch: [t('Două biserici sub același acoperiș, aproape de centru', 'Two churches under one roof, near the centre'),
+      t('Viața Nouă: duminica 10:30–12:00, închinare și predică', 'Viața Nouă: Sundays 10:30–12:00, worship and Bible teaching'),
+      t('Studiu biblic marțea, 18:30–20:00', 'Bible study on Tuesdays, 18:30–20:00'),
+      t('Tineret duminica seara: jocuri, masă, rugăciune', 'Youth on Sunday evenings: games, a meal, prayer'),
+      t('BCUO, biserica ucraineană: joia la 18:00', 'BCUO, the Ukrainian church: Thursdays at 18:00'),
+      t('BCUO e administrată de asociația Drumul Vieții', 'BCUO is run by the Drumul Vieții association'),
+      'viatanoua.ro · bcuo.ro'] },
   sight('primaria', '🏛️', [6481078, 1207602388], t('Primăria și Turnul Primăriei', 'City Hall and its tower'),
     t('Primăria Oradea, cu turnul ei deasupra Pieței Unirii', 'Oradea City Hall, its tower over Piața Unirii')),
   sight('lunachurch', '🌙', [651522972], t('Biserica cu Lună', 'Church with the Moon'),

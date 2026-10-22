@@ -145,7 +145,7 @@ export const UI = {
   // game/partners.js
   "Відкрити вебсайт": ["Deschide site-ul", "Open the website"],
   "· партнер": ["· partener", "· partner"],
-  "Хочете тут свою рекламу? Напишіть боту ✈": ["Vrei reclama ta aici? Scrie-ne ✈", "Want your ad here? Write to us ✈"],
+  "Хочете тут свою рекламу? Напишіть боту ✈": ["Vrei să apari și tu ca partener? Scrie-ne pe WhatsApp", "Want to be a partner too? Message us on WhatsApp"],
   // game/placeat.js
   "вулиця": ["strada", "strada"],
   "вул": ["str", "str"],
@@ -222,8 +222,8 @@ export const UI = {
   "Вулиці": ["Străzi", "Streets"],
   "✈ Бот: ідея, покращення, реклама": ["WhatsApp: idei și cereri", "WhatsApp: ideas and requests"],
   "🏠 Покращити цей об'єкт": ["🏠 Îmbunătățește clădirea", "🏠 Improve this building"],
-  "📣 Реклама тут": ["📣 Reclamă aici", "📣 Advertise here"],
-  "відкриється бот у Telegram": ["se deschide botul Telegram", "opens the Telegram bot"],
+  "📣 Реклама тут": ["📣 Devino partener aici", "📣 Become a partner here"],
+  "відкриється бот у Telegram": ["se deschide WhatsApp, cu locul atașat", "opens WhatsApp, with the spot attached"],
   "🚗 Переміститись сюди?": ["🚗 Te muți aici?", "🚗 Go here?"],
   "Так": ["Da", "Yes"],
   "Ні": ["Nu", "No"],

@@ -57,6 +57,14 @@ a note on the start card (`consentNote`). The player's plate carries the NGO's l
 (`public/assets/brand/oradea-plate.svg`, `logoColours`). The start card links this code (`source`, AGPL-3.0 sec. 13) and
 names Cloudflare Web Analytics (cookieless), switched on in the Cloudflare dashboard.
 
+## Partners
+
+Partners show the way Cherkasy's do (`game/partners.js`): a pink badge on both maps, a big-map teleport, a pink ring at the
+door and a card with the pitch and the website (O). A partner is a `kind: 'ad'` entry in `places.js` (url, pitch) plus a
+line in `sites/partners.js` `TABLE` (OSM building, street, optional board text that covers the generic shop names);
+`tests/oradea-partners.test.mjs` checks both. No money changes hands: requests come by WhatsApp (the card's last line,
+the big map's right-click "become a partner here" / "improve this building", which attach the spot as a Google Maps link).
+
 ## Shared files touched (one or two lines each, all `CITY`-guarded)
 
 `main.js`, `mapview.js`, `audio/engine.js`, `audio/radio.js`, `render/daylight.js`, `npc/lanes.js`, `npc/traffic.js`,

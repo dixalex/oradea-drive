@@ -22,7 +22,8 @@ const ORADEA_HEAD = `<title>Oradea Drive</title>
   <meta property="og:site_name" content="Oradea Drive">
   <meta property="og:title" content="Oradea Drive">
   <meta property="og:description" content="Drive and fly through the real city of Oradea, in your browser.">
-  <style>.hud-help .bot, .bm-ctx, .pc-own { display: none !important; }
+  <style>.hud-help .bot { display: none !important; }
+    .pc-own, .bm-ctx a { color: #7ee2a8 !important; }
     /* the news chip stays in the HUD's chip chain (hud.js places each after the previous) at zero width */
     .hud-newskey { visibility: hidden !important; width: 0 !important; padding: 0 !important; border: 0 !important; margin-left: -8px !important; overflow: hidden !important; }
     /* the bot chip and the big map's bot link open the WhatsApp feedback chat (config.feedback, ui/botlink.js) */

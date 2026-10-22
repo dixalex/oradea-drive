@@ -35,8 +35,10 @@ export default {
   assets: 'assets/oradea/',
   feedback: 'https://wa.me/40741849122',
   source: 'https://github.com/dixalex/oradea-drive/tree/oradea',
-  help: [[t('Idei și cereri', 'Ideas and requests'), [['I', t('WhatsApp: o idee, o greșeală sau ceva ce vrei în joc (școala ta, biserica, firma, o clădire)',
-    'WhatsApp: an idea, a bug, or something you want in the game (your school, church, business, a building)')]]]],
+  help: [[t('Idei, cereri, parteneri', 'Ideas, requests, partners'), [['I', t('WhatsApp: o idee, o greșeală sau ceva ce vrei în joc (școala ta, biserica, firma, o clădire)',
+    'WhatsApp: an idea, a bug, or something you want in the game (your school, church, business, a building)')],
+    [t('Clic dreapta', 'Right click'), t('pe harta mare (M): îmbunătățește clădirea de acolo sau devino partener acolo – WhatsApp, cu locul atașat',
+      'on the big map (M): improve the building there or become a partner there – WhatsApp, with the spot attached')]]]],
   consentNote: t('💬 Ai o idee, ai găsit o greșeală sau vrei ceva în joc – școala ta, biserica, firma, o clădire? Scrie-ne pe WhatsApp: tasta <kbd>I</kbd> sau butonul verde de sus. Oradea Drive e un proiect Drumul Vieții.',
     '💬 Got an idea, found a bug, or want something in the game – your school, church, business or a building? Message us on WhatsApp: press <kbd>I</kbd> or the green button at the top. Oradea Drive is a Drumul Vieții project.'),
   tools: {
