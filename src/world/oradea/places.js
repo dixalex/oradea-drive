@@ -54,7 +54,7 @@ export const PLACES = [
       t('Tineret, familii tinere, tabără de vară pentru copii', "Youth, young families, a children's summer camp"),
       t('Slujbele se văd live pe bbeo.ro/live', 'Services stream live at bbeo.ro/live'),
       'bbeo.ro'] },
-  { id: 'bsvo', kind: 'ad', icon: '⛪', bld: [717082635], name: 'BSVO · Stânca Veacurilor',
+  { id: 'bsvo', kind: 'ad', icon: '⛪', bld: [717082633], name: 'BSVO · Stânca Veacurilor',
     note: t('Biserică baptistă · Calea Borșului 3', 'Baptist church · Calea Borșului 3'),
     url: 'https://bsvo.ro/?utm_source=oradea.drumulvietii.ro',
     pitch: [t('Biserica Baptistă Stânca Veacurilor Oradea', 'Stânca Veacurilor Baptist Church, Oradea'),

@@ -19,7 +19,7 @@ export const TABLE = [
   // south forecourt (bbsoToMap(41, 48.5)), Emanuel's main doors through the fence's gap on the boulevard (22°, 27.5 m from the drum's centre)
   { id: 'bbso', bld: 1264556370, door: [1208.5, 1715.1] },
   { id: 'emanuel', bld: 3530253, door: [-868.5, 332.8] },
-  { id: 'bsvo', bld: 717082635, street: 'Calea Borșului' },
+  { id: 'bsvo', bld: 717082633, door: [-2811.4, -959.3] }, // the church is the long building 717082633, not the cream shop 717082635; the ring 5.4 m before its glazed double door, through the open yard gate (sites/bsvo.js: church frame u 25.6, v -5.4)
 ];
 
 const DOOR_OUT = 3.2, BOARD_H = 0.8; // m: the ring out from the wall; the board's height (the facade's band is 0.75 m)

@@ -73,7 +73,7 @@ changes hands: requests come by WhatsApp (the card's last line, the big map's ri
 | Casa Minunată | Str. Traian Lalescu 47, OSM 436834224 | hand-built (`sites/casaminunata.js`, the foundation's photos), ring at the street gate |
 | BBSO | Str. Thurzó Sándor 19, OSM 1264556370 | hand-built (`sites/baptist`), ring at the entrance block |
 | Emanuel | Bd. Decebal, OSM relation 3530253 | hand-built (`sites/baptist`), ring at the main doors |
-| BSVO, Stânca Veacurilor | Calea Borșului 3, OSM 717082635 (or 717082633) | generator's; rebuild: `card-bsvo.txt` |
+| BSVO, Stânca Veacurilor | Calea Borșului 3, OSM 717082633 (the cream shop 717082635 is a neighbour) | hand-built (`sites/bsvo.js`, 2024–2025 Street View), ring at the glazed door through the open yard gate |
 
 A building is a sight or a partner, never both, so the big map shows one badge: BBSO and Emanuel are partners and not
 part of the explore quest. The rebuild cards are in `tools/oradea/agents/`. A ring stands on the drawn surface
