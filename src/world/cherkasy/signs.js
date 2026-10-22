@@ -11,11 +11,11 @@ const ROWS = [ // [board, text, font]
   ['#d0321c', '#ffffff', 'ШАУРМА', 'sans'],
 ];
 
-export function ukrainianSigns() {
-  const W = 1024, RH = 128, canvas = Object.assign(document.createElement('canvas'), { width: W, height: RH * ROWS.length });
+export function ukrainianSigns(rows = ROWS) { // rows: another city's boards, same layout
+  const W = 1024, RH = 128, canvas = Object.assign(document.createElement('canvas'), { width: W, height: RH * rows.length });
   const g = canvas.getContext('2d');
   let top = 0;
-  for (const [bg, fg, text, face] of ROWS) {
+  for (const [bg, fg, text, face] of rows) {
     const grad = g.createLinearGradient(0, top, 0, top + RH);
     [[0, bg], [1, shade(bg, -0.18)]].forEach(([at, c]) => grad.addColorStop(at, c));
     g.fillStyle = grad; g.fillRect(0, top, W, RH);

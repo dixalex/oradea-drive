@@ -7,7 +7,7 @@
 //             pitch?: [headline, line, ...], bld?: [OSM building ids], cut?: { p: [x, z], n: [nx, nz] } or a list of them
 //             (only the part of the footprints on the +n side of every cut), ring?: flat ring [x, z, …] (a footprint OSM
 //             does not have yet), rings?: several such rings, ll?: [lat, lon], xz?: [x, z] }]
-//   resolvePlaces(map, geo) -> [{ id, kind, name, note, icon, logo, url, pitch, x, z, rings: [flat ring, ...], ringIds }]
+//   resolvePlaces(map, geo, list = PLACES) -> [{ id, kind, name, note, icon, logo, url, pitch, x, z, rings: [flat ring, ...], ringIds }]
 //     ringIds[i]: the OSM building id rings[i] came from (`bld`), null for a place's own `ring` / `rings`
 //     geo: FRAME_OF(map) (lat / lon -> x / z); places whose anchor cannot be found are dropped
 //   USPACE_CUT: the line between the REST INN hotel and the U space office tower in OSM way 129420363 (restinn.js);
@@ -228,13 +228,13 @@ export function clipRing(p, { p: [ox, oz], n: [nx, nz] }) {
   return out.length >= 6 ? out : [];
 }
 
-export function resolvePlaces(map, geo) {
+export function resolvePlaces(map, geo, list = PLACES) {
   const byId = new Map();
-  const want = new Set(PLACES.flatMap((q) => q.bld || []));
+  const want = new Set(list.flatMap((q) => q.bld || []));
   // a multipolygon relation comes as several entries under one id: every piece is kept
   for (const b of map?.buildings || []) if (want.has(b.id) && b.p?.length >= 6) byId.set(b.id, [...(byId.get(b.id) || []), b.p]);
   const out = [];
-  for (const q of PLACES) {
+  for (const q of list) {
     const own = [...(q.ring ? (Array.isArray(q.ring[0]) ? q.ring : [q.ring]) : []), ...(q.rings || [])];
     const osm = (q.bld || []).flatMap((id) => (byId.get(id) || []).map((r) => [id, [].concat(q.cut || []).reduce(clipRing, r)])).filter(([, r]) => r.length);
     const rings = [...own, ...osm.map(([, r]) => r)], ringIds = [...own.map(() => null), ...osm.map(([id]) => id)];

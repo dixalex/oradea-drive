@@ -10,9 +10,11 @@
 //   footprintRaster(footprints, region) -> BitRaster (1 m) of the building footprints (also people.js isBuilding)
 //   BARE_ROADS: Set of OSM road names with no generated street rows
 //   roundaboutIslands(map) -> [{ c: [x, z], r }]   the roundabouts' central islands (closed rings of road pieces)
-//   treeSpots({ map, ground, footprints, occ?, y = 0.15, clear = [], extra = [], sparse = null }) -> spots
+//   treeSpots({ map, ground, footprints, occ?, y = 0.15, clear = [], extra = [], sparse = null, real = null }) -> spots
 //     ground: { heightAt, onAsphalt, isWater };  clear: [(x, z) -> bool] no generated tree there (hand-built sites);
-//     extra: hand-placed spots appended as given;  sparse(x, z) -> 0..1 thinning of generated trees (the sandy shore)
+//     extra: hand-placed spots appended as given;  sparse(x, z) -> 0..1 thinning of generated trees (the sandy shore);
+//     real(x, z) -> bool: where a canopy map says real trees stand (a city that has one): street rows and yard trees
+//       grow only there, the yards denser where they do; parks and forests keep their fill
 //     spot: { x, z, y, kind: 'street' | 'park' | 'elm' | 'small' | 'conifer', sc, pal, s3?, variant? }
 import { PARK_GREENS, PARK_PINE, PAL } from '../trees.js';
 import { ringPts, triangulate, BitRaster, rng, bboxOf, inPoly } from './geo.js';
@@ -85,7 +87,7 @@ export function footprintRaster(footprints, R) {
   return occ;
 }
 
-export function treeSpots({ map, ground, footprints, occ = null, y = 0.15, clear = [], extra = [], sparse = null }) {
+export function treeSpots({ map, ground, footprints, occ = null, y = 0.15, clear = [], extra = [], sparse = null, real = null }) {
   const t0 = performance.now();
   const R = map.region, r = rng(7);
   occ ??= footprintRaster(footprints, R);
@@ -160,7 +162,7 @@ export function treeSpots({ map, ground, footprints, occ = null, y = 0.15, clear
           const x = ax + ux * s - uz * side * off, z = az + uz * s + ux * side * off;
           if (!inRegion(x, z) || blocked(x, z, 1.6) || crowded(x, z, 6) || thinned(x, z)) continue;
           // a bare spot still draws its random numbers: the trees elsewhere keep their places
-          const plant = bareRoad || farm.get(x, z) === 1 ? skip : put;
+          const plant = bareRoad || farm.get(x, z) === 1 || (real && !real(x, z)) ? skip : put;
           if (poplar) plant(x, z, 'conifer', 1.1 + r() * 0.3, green(), poplarS3());
           else plant(x, z, 'street', 1.0 + r() * 0.4, green(), LIFT);
         }
@@ -210,7 +212,7 @@ export function treeSpots({ map, ground, footprints, occ = null, y = 0.15, clear
   for (let gx = R.x0; gx < R.x1; gx += 12) {
     for (let gz = R.z0; gz < R.z1; gz += 12) {
       const x = gx + r() * 12, z = gz + r() * 12, privateSector = (houses.get(hk(x, z)) || 0) >= 4;
-      if (r() > (privateSector ? 0.22 : 0.2) || blocked(x, z, 2.5) || crowded(x, z, privateSector ? 7 : 11) || thinned(x, z)) continue;
+      if (r() > (real ? (real(x, z) ? 0.6 : 0) : privateSector ? 0.22 : 0.2) || blocked(x, z, 2.5) || crowded(x, z, privateSector ? 7 : 11) || thinned(x, z)) continue;
       if (r() < 0.6 && indus.get(x, z) === 1) continue;
       const plant = farm.get(x, z) === 1 ? skip : put; // ploughed fields stay open
       if (privateSector) { plant(x, z, 'small', 0.7 + r() * 0.5, green()); continue; }

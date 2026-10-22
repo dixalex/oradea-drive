@@ -10,7 +10,17 @@
     "dev": "vite --port 5174 --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --port 4174 --host 127.0.0.1",
-    "map": "node tools/cherkasy/build_map.mjs"
+    "map": "node tools/cherkasy/build_map.mjs",
+    "dev:oradea": "VITE_CITY=oradea vite --port 5175 --host 127.0.0.1",
+    "build:oradea": "VITE_CITY=oradea vite build",
+    "preview:oradea": "VITE_CITY=oradea vite preview --port 4175 --host 127.0.0.1",
+    "fetch:oradea": "CITY=oradea node tools/cherkasy/fetch_osm.mjs && CITY=oradea node tools/cherkasy/fetch_dem.mjs && npm run fetch:oradea:extra",
+    "fetch:oradea:extra": "uv run --with duckdb python -I tools/oradea/fetch_overture.py",
+    "canopy:oradea": "uv run --with rasterio --with numpy --with pyproj python -I tools/oradea/canopy.py",
+    "heights:oradea": "node tools/oradea/fetch_heights.mjs && uv run --with rasterio --with numpy --with pyproj python -I tools/oradea/heights.py",
+    "map:oradea": "CITY=oradea node tools/cherkasy/build_map.mjs",
+    "deploy:oradea": "npm run build:oradea && npx wrangler deploy",
+    "strings:oradea": "node tools/oradea/ui-strings.mjs"
   },
   "dependencies": {
     "n8ao": "^2.0.1",

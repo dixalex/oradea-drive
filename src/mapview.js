@@ -12,6 +12,7 @@ import { createBigMap } from './ui/bigmap.js';
 import { createPeek } from './ui/peek3d.js';
 import { resolvePlaces } from './world/cherkasy/places.js';
 import { FRAME_OF } from './world/cherkasy/frame.js';
+import { CITY, ASSETS } from './city.js';
 
 const CARD = `
   <div class="mv-card">
@@ -32,12 +33,12 @@ export async function startMapView({ container = document.body } = {}) {
   const loading = document.getElementById('loading');
   const msg = loading?.querySelector('.msg');
   if (msg) msg.textContent = 'Завантаження карти…';
-  const asset = (f) => fetch(`${import.meta.env?.BASE_URL ?? '/'}assets/cherkasy/${f}`).then((r) => r.json());
+  const asset = (f) => fetch(`${ASSETS}${f}`).then((r) => r.json());
   const [map, buildings] = await Promise.all([asset('map.json'), asset('map_buildings.json')]);
   map.buildings = buildings;
 
   const geo = FRAME_OF(map);
-  const world = { cherkasy: { map }, places: resolvePlaces(map, geo) };
+  const world = { cherkasy: { map }, places: CITY ? resolvePlaces(map, geo, CITY.places ?? []) : resolvePlaces(map, geo) };
   const painter = createMapPainter({ world });
   const peek = createPeek({ container, map, painter, geo });
   const bigmap = createBigMap({ painter, player: null, container, map, peek });

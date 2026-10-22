@@ -27,6 +27,7 @@ import * as THREE from 'three';
 import { pathAt } from './lanes.js';
 import { VTYPES, createFleet, AD_URBAN, LIVERY_URBAN, URBAN_BLUE, adSeedFor } from './vehicles.js';
 import { createWrecks, pushBox } from './wrecks.js';
+import { CITY } from '../city.js';
 
 const PER_M = 0.03;            // cars per metre of lane at density 1 and road-class weight 1
 const A_MAX = 1.8, B_COMF = 3.2, B_MAX = 8, HEADWAY = 1.5, GAP0 = 2.2;
@@ -52,6 +53,7 @@ const pick = (a, r) => a[Math.floor(r * a.length) % a.length];
 // world/cherkasy/traffic.js) and uses the colour it returns.
 //   urbanDress(car, type, color) -> color   sets car.adSeed for the paid ones; one rng draw for a bus or a truck
 export function urbanDress(c, type, color) {
+  if (CITY) return color; // URBAN paid for Cherkasy only
   if (type === 'bus' && c.rng() < 0.25) { c.adSeed = adSeedFor(AD_URBAN); return URBAN; }
   if (type === 'truck' && c.rng() < 0.25) c.adSeed = adSeedFor(LIVERY_URBAN);
   return color;

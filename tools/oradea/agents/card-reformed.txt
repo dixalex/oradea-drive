@@ -1,0 +1,14 @@
+Follow /Users/alexandertinyaev/Sites/oradea-drive/tools/oradea/agents/BRIEF.md (read it fully first, especially the Memory rule and the new note on generic park furniture; it overrides parts of docs/agent-brief.md).
+
+Slug: reformed
+
+Oradea's Reformed, Lutheran and Unitarian churches and its synagogues, in the play area. Done, not yours: the Sion synagogue w423122948 (sites/ferdinand). Other agents build the Orthodox, Baptist and Catholic churches (sites/orthodox, sites/baptist, sites/catholic); you may read their kits for ideas but never import from or edit them.
+
+Yours (w = way, n = node; for a node find the building under it in map_buildings.json), map x,z in metres:
+Reformed: w286245387 Biserica reformată Orașul Nou (-436,86); w421767355 Seleuș (2660,1205); w1210617912 Rogerius (-1145,-1298); n3501759561 (-690,-1792); also find Oradea's other Reformed churches (e.g. the Olosig / Calvin church, the one by the fortress) if OSM tags them differently.
+Lutheran: w1455869295 Biserica Evanghelică (-416,-71). Unitarian: w1545661917 (-488,-1047).
+Synagogues: w286239557 the Orthodox synagogue (408,152); w423100549, w423122957, w1539737624 – find out what each is (the Great Orthodox synagogue, the Aqua synagogue, the Jewish community's buildings).
+
+Do it in two tiers: (a) the 4–5 most prominent (the synagogues, the large Reformed churches in the centre, the Lutheran church; pick after research) hand-built from photos, as they look today; (b) every other one from a parametric Protestant church kit dressed per church (hall nave, west tower with a spire and the star or cockerel of the Reformed churches, plain walls, roof colour), sized from its OSM outline and set by photos where you can find them.
+
+Places: add the tier-(a) buildings that src/world/oradea/places.js lacks to SITE.places (kind 'sight', bilingual via t()). Budget: tier (a) ≤ 20k vertices each, kit churches ~2–4k each, ≤ 15 draw calls for the whole site (share materials) – draw calls matter: the game is heading for phones, where the whole frame should stay near 150–200; merge small far buildings into shared meshes rather than one group each.

@@ -19,6 +19,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { CITY } from '../city.js';
 
 export const PART = { BASE: 0, PAINT: 1, METAL: 2, GLASS: 3, LAMP: 4, RUBBER: 5, PLASTIC: 6, HEAD: 7, TAIL: 8, SCREEN: 14, AD: 15 };
 
@@ -65,7 +66,7 @@ export function adTile(seed) {
 // a brand SVG (public/assets/brand) as one shared Image: the atlas tile and the livery read the same load
 const brandImg = {};
 const brandImage = (name) => brandImg[name] ??= new Promise((res) => {
-  if (typeof Image === 'undefined') return res(null);
+  if (typeof Image === 'undefined' || CITY) return res(null); // the URBAN logo is Cherkasy's paid placement
   const img = new Image();
   img.onload = () => res(img); img.onerror = () => { console.warn(`[vehicles] ${name}.svg did not load`); res(null); };
   img.src = `${import.meta.env?.BASE_URL ?? '/'}assets/brand/${name}.svg`;
@@ -176,6 +177,7 @@ export function makeVehicleAtlas() {
     box(x, y, x + 512, y + 170, bg);
     text(t1, x + 256, y + 70, 470, `bold 66px ${SANS}`, fg); text(t2, x + 256, y + 132, 440, `36px ${SANS}`, fg);
   });
+  CITY?.vehicleAtlas?.({ g, box, text, SANS }); // another city's plates, signs and ads over these cells
   for (const [x, y, c] of SWATCH) box(x - 16, y - 16, x + 16, y + 16, c);
   return tex;
 }

@@ -22,6 +22,7 @@
 //     distance) for the given parts; the worker entry point of this same file calls it
 import * as THREE from 'three';
 import { WATER_Y } from '../water.js';
+import { CITY } from '../../city.js';
 import { patchMaterial } from '../materials.js';
 import { decalBias } from '../../render/renderer.js';
 import { mergeGeometries } from '../../kit/batch.js';
@@ -52,7 +53,7 @@ vec3 surfAsphalt(vec2 p, vec4 m, vec4 n, bool lot) {
 }
 vec3 surfPavers(vec2 p, vec4 m, vec4 n) {
   // the centre has concrete pavers (grey with terracotta patches), the outskirts patched asphalt
-  float centre = 1.0 - smoothstep(1100.0, 1700.0, length(p - vec2(-150.0, 700.0)));
+  float centre = 1.0 - smoothstep(1100.0, 1700.0, length(p - vec2(${(CITY?.pavingCentre ?? [-150, 700]).map((v) => v.toFixed(1)).join(', ')})));
   vec3 asph = texture(gAsphalt, p / 5.0).rgb * 1.1 * (0.85 + 0.3 * m.r);
   vec2 q = p / vec2(0.2, 0.1); q.x += 0.5 * mod(floor(q.y), 2.0);
   vec2 f = fract(q);

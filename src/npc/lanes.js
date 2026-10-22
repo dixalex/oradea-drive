@@ -14,10 +14,11 @@
 //     signals: [{ x, y, z, ry, ax }] one head per signalised approach; axis objects { o: offset s, g: 0 | 1 }
 // Right-hand traffic: lanes sit right of the centreline; one-way ways run forward only. Nearby junction nodes (dual
 // carriageways, offset T's) form one junction; lanes stop short of the crossing carriageways and moves run through the box.
+import { CITY } from '../city.js';
 const CLASS = { primary: 5, primary_link: 4, secondary: 4, secondary_link: 3, tertiary: 3, tertiary_link: 2, residential: 1, unclassified: 1, living_street: 0.5 };
 // relative traffic density per road class (busy named avenues get a bit more)
 const DENSITY = { primary: 1.0, primary_link: 0.5, secondary: 0.85, secondary_link: 0.4, tertiary: 0.45, tertiary_link: 0.3, residential: 0.14, unclassified: 0.12, living_street: 0.06 };
-const BUSY_NAMES = /Шевченка|Смілянськ|Хрещатик|Перемоги|Героїв Дніпра|Чорновола|Благовісн/;
+const BUSY_NAMES = CITY?.busyStreets ?? /Шевченка|Смілянськ|Хрещатик|Перемоги|Героїв Дніпра|Чорновола|Благовісн/;
 const SEG_MIN = 14, PIECE_MIN = 12, DP_TOL = 0.7, CYCLE = 48, DECK_STEP = 16; // DECK_STEP: lane pieces over a deck (m)
 const REGION_PAD = 100; // lanes end this far past map.region (its asphalt reaches 150 m past it)
 

@@ -20,8 +20,9 @@
 //   Atmosphere helpers shared with sky.js: ATMO, airMass(s), pathScale(up), sunTransmittance(mass, haze, out), skyRadiance(...).
 // World frame (tools/cherkasy/build_map.mjs): map rotated 49.4 deg, +x north-east, +z south-east, y up.
 import * as THREE from 'three';
+import { CITY } from '../city.js';
 
-export const SITE = { lat: 49.4445, lon: 32.06, mapRotDeg: 49.4 };
+export const SITE = CITY ? { ...CITY.sun, mapRotDeg: CITY.tools.frame.rot } : { lat: 49.4445, lon: 32.06, mapRotDeg: 49.4 };
 const RAD = Math.PI / 180;
 const ROT_C = Math.cos(SITE.mapRotDeg * RAD), ROT_S = Math.sin(SITE.mapRotDeg * RAD);
 

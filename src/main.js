@@ -175,14 +175,16 @@ function setOverlay(overlay, text) {
   if (el) el.textContent = text;
 }
 
-// the Cherkasy city (src/world/cherkasy/city.js) when it is present in the build; else null -> the test world
-const CITY = import.meta.glob('./world/cherkasy/city.js');
+// the city (src/world/cherkasy/city.js, or src/world/oradea/city.js with VITE_CITY=oradea – src/city.js) when it is
+// present in the build; else null -> the test world. The branch is static, so the other city stays out of the bundle.
+const CITY = import.meta.env.VITE_CITY === 'oradea' ? import.meta.glob('./world/oradea/city.js') : import.meta.glob('./world/cherkasy/city.js');
 async function loadCity(opts) {
-  const load = CITY['./world/cherkasy/city.js'];
+  const load = Object.values(CITY)[0];
   if (!load) return null;
   try {
     const mod = await load();
-    return mod.buildCherkasy ? await mod.buildCherkasy(opts) : null;
+    const build = mod.buildCherkasy ?? mod.buildCity;
+    return build ? await build(opts) : null;
   } catch (err) { console.error('[main] Cherkasy world failed, using the test world', err); return null; }
 }
 
@@ -195,7 +197,7 @@ export async function startGame({ container = document.getElementById('app') || 
 
   // world: the city, or (?testworld, or no city in the build) the flat test world
   setOverlay(overlay, 'Будуємо Черкаси…');
-  let world = params.has('testworld') ? null : await loadCity({ scene, renderer, camera, ctx, onProgress: (t) => setOverlay(overlay, t) });
+  let world = params.has('testworld') ? null : await loadCity({ scene, renderer, camera, ctx, onProgress: (f, t) => setOverlay(overlay, t ?? f) });
   if (!world) world = createTestWorld({ scene });
   ctx.world = world;
   ctx.groundAt = (x, z) => world.groundHeight(x, z);

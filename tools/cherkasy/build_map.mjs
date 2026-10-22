@@ -6,21 +6,22 @@
 // then run along the axes (cheap exact box collision, axis-aligned walls like the Manhattan build).
 //
 // Output (all coordinates rounded to 0.1 m, rings flattened [x0,z0,x1,z1,...], outer rings counter-clockwise in x/z):
-//   frame, region, buildings[{id,p,holes?,k,lv,h,mh,rs,rc,bc,f,name,row?,parts?}], roads[{p,w,k,n,br,ow}], asphalt[rings],
-//   walks[rings], paving[rings], land[rings], cover[{k,rings}], rails[{p}], trees[[x,z]], pois[...],
+//   frame, region, buildings[{id,p,holes?,k,lv,h,mh,rs,rc,bc,f,name,row?,u?,parts?}], roads[{p,w,k,n,br,ow}], asphalt[rings],
+//   walks[rings], paving[rings], land[rings], cover[{k,rings}], rails[{p}], trams?[{id,p,sv,br}] (tools.trams), trees[[x,z]], pois[...],
 //   parking[{id,p,s?,cap?}] (open-air car parks: s 1 = street_side bays, cap = OSM capacity)
 // Run: node tools/cherkasy/build_map.mjs
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
 import ClipperLib from 'clipper-lib';
 import { PNG } from 'pngjs';
 import { existsSync } from 'node:fs';
+import { CITY, RAW as RAWDIR, OUT, SITES } from './city.mjs';
 import { signedArea2, ringArea, vertexMean, asCCW, asCW, simplify, boundsOf, pointInRing, distToSegment, minAreaRect, edgesOf, GridIndex,
   gauss, erode, dilate, scanFill, pushPullFill, chamfer } from './geom2d.mjs';
 
-const RAW = (n) => JSON.parse(readFileSync(new URL(`./raw/${n}.json`, import.meta.url))).elements;
-export const FRAME = { lat0: 49.4445, lon0: 32.0600, rot: 49.4 };
+const RAW = (n) => JSON.parse(readFileSync(new URL(`./${n}.json`, RAWDIR))).elements;
+export const FRAME = CITY?.tools.frame ?? { lat0: 49.4445, lon0: 32.0600, rot: 49.4 };
 // playable region (the main city: river bank .. pr. Khimikiv, Sosnivka .. the port / Sady) and the land/water extent
-export const REGION = { x0: -4750, x1: 1900, z0: -4100, z1: 5800 }; // z0 reaches past vul. Oleksiia Panchenka into the pines (issue #6), x0 past Hotel «Нива» on Smilianska to the «Аврора» multimarket (issue #26), z1 includes Petra Doroshenka and Chyhyrynska (issue #28)
+export const REGION = CITY?.tools.region ?? { x0: -4750, x1: 1900, z0: -4100, z1: 5800 }; // z0 reaches past vul. Oleksiia Panchenka into the pines (issue #6), x0 past Hotel «Нива» on Smilianska to the «Аврора» multimarket (issue #26), z1 includes Petra Doroshenka and Chyhyrynska (issue #28)
 const LAND = { x0: REGION.x0 - 25000, x1: REGION.x1 + 25000, z0: REGION.z0 - 25000, z1: REGION.z1 + 25000 };
 
 const KY = 111320, KX = 111320 * Math.cos(FRAME.lat0 * Math.PI / 180);
@@ -281,6 +282,15 @@ for (const e of roadEls) {
   if (!P.some(([x, z]) => inRect(REGION, x, z, 600))) continue;
   rails.push({ p: flat(P), sv: t.service ? 1 : 0, br: t.bridge && t.bridge !== 'no' ? 1 : 0 });
 }
+// trams (tools.trams): street track, drawn by the city's own module (src/world/oradea/trams.js), not as railway
+const trams = [];
+if (CITY?.tools.trams) for (const e of roadEls) {
+  const t = e.tags || {}; if (t.railway !== 'tram' || !e.geometry || (t.tunnel && t.tunnel !== 'no')) continue;
+  const P = dp(e.geometry.map(g => proj(g.lat, g.lon)), 0.2, false);
+  if (P.length < 2 || !P.some(([x, z]) => inRect(REGION, x, z, 300))) continue;
+  trams.push({ id: e.id, p: flat(P), sv: t.service ? 1 : 0, br: t.bridge && t.bridge !== 'no' ? 1 : 0 });
+}
+if (CITY?.tools.trams) console.log('tram ways', trams.length);
 
 // ------------------------------------------------------------------------------------------------ buildings
 const roadIdx = new Hash(64);
@@ -313,7 +323,7 @@ const colour = (v) => {
 // one, the less informative one goes (fewer of levels / height / name / address tags; then the smaller). An outline a
 // hand-built site names by id (src/world/cherkasy/*.js) is never dropped in favour of an unnamed one.
 const SITE_IDS = (() => {
-  const dir = new URL('../../src/world/cherkasy/', import.meta.url), ids = new Set();
+  const dir = SITES, ids = new Set();
   for (const f of readdirSync(dir)) if (f.endsWith('.js')) for (const m of readFileSync(new URL(f, dir), 'utf8').matchAll(/\b\d{7,11}\b/g)) ids.add(+m[0]);
   return ids;
 })();
@@ -342,6 +352,24 @@ function dedupeBuildings(list) {
   list.length = 0; list.push(...keep);
 }
 
+// buildings OSM lacks (tools.extraBuildings: GeoJSON lines of footprints in the raw folder, e.g. Overture's Microsoft ML
+// set from tools/oradea/fetch_overture.py): plain building=yes ways with ids from 3e9, after the OSM ones; under 40 m2
+// they are dropped (yard sheds, the bulk of the ML extras on the flat)
+if (CITY?.tools.extraBuildings) {
+  const f = new URL(`./${CITY.tools.extraBuildings}`, RAWDIR);
+  let n = 0, small = 0;
+  if (existsSync(f)) for (const line of readFileSync(f, 'utf8').split('\n')) {
+    if (!line.trim()) continue;
+    const ft = JSON.parse(line), g = ft.geometry; if (!g) continue;
+    const polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
+    for (const rings of polys) {
+      const geometry = rings[0].map(([lon, lat]) => ({ lat, lon }));
+      if (geometry.length < 4 || areaOf(geometry.map(q => proj(q.lat, q.lon))) < 40) { small++; continue; }
+      bldEls.push({ type: 'way', id: 3e9 + n++, tags: { building: 'yes', 'source:geometry': ft.properties?.dataset ?? 'extra' }, geometry });
+    }
+  }
+  console.log('extra buildings', n, 'kept,', small, 'under 40 m2 dropped', existsSync(f) ? '' : `(no ${f.pathname})`);
+}
 const blds = [];
 const partsRaw = [];
 for (const e of bldEls) {
@@ -464,6 +492,41 @@ function inferLevels(b) {
   return b.A < 300 ? 2 : b.A < 1200 ? (r < 0.5 ? 2 : 3) : (r < 0.6 ? 3 : 4);
 }
 for (const b of blds) { b.lv = inferLevels(b); if (b.cottage && (b.k === 'apt' || b.k === 'public')) b.lv = Math.min(b.lv, 3); } // no borrowed nine storeys among cottages
+// footprints from the extra source (tools.extraBuildings) carry no tags, and the neighbours' borrowed levels made hill
+// villas five- to sixteen-storey blocks: under 450 m2 a house of one or two storeys, bigger ones three storeys at most
+for (const b of blds) if (b.t['source:geometry'] && !b.tagLv) {
+  if (b.A < 450 && b.k !== 'shed' && b.k !== 'indus' && b.k !== 'garage') { b.k = 'house'; b.lv = b.A > 150 && hashStr('lv' + b.id) < 0.45 ? 2 : 1; }
+  else b.lv = Math.min(b.lv, 3);
+}
+// measured heights (tools.heights, a raster in the raw folder): untagged buildings take the storeys their footprint measures
+if (CITY?.tools.heights) {
+  const { applyHeights } = await import('../oradea/heights.mjs');
+  const s = applyHeights(blds, new URL(`./${CITY.tools.heights}`, RAWDIR)); if (s) console.log(s);
+}
+// the old quarters (tools.oldTown, tools/oradea/oldtown.mjs): historic town houses, their colours, no borrowed slabs
+if (CITY?.tools.oldTown) {
+  const { applyOldTown } = await import('../oradea/oldtown.mjs');
+  const places = poiEls.filter((e) => e.type === 'node' && /^(suburb|quarter|neighbourhood)$/.test(e.tags?.place ?? '')).map((e) => { const [x, z] = proj(e.lat, e.lon); return { name: e.tags.name, x, z }; });
+  console.log(applyOldTown(blds, { places, historic: CITY.tools.oldTown }));
+}
+// a use where the typology draws the wrong thing (tools.buildingUse): malls and big-box shops, market halls and sports
+// halls are one or two tall storeys, not blocks of flats or offices; `u` tells buildings.js to draw them so
+const BIGBOX = /^(mall|supermarket|department_store|doityourself|hardware|furniture|wholesale|electronics)$/;
+const HALLS = /^(sports_centre|sports_hall|stadium|swimming_pool|ice_rink)$/;
+function useOf(b) {
+  const t = b.t, bt = t.building ?? '';
+  if (t.amenity === 'marketplace') return 'market';
+  if (HALLS.test(t.leisure ?? '') || /^(sports_hall|sports_centre|stadium|grandstand)$/.test(bt) || (t.leisure === 'fitness_centre' && b.A > 1500)) return 'hall';
+  if (BIGBOX.test(t.shop ?? '') || (/^(retail|supermarket|mall)$/.test(bt) && b.A > 1500) || (bt === 'commercial' && b.A > 3000 && (b.tagLv ?? 0) <= 3)) return 'mall';
+  return null;
+}
+if (CITY?.tools.buildingUse) for (const b of blds) {
+  if (b.k === 'church' || b.k === 'house' || b.k === 'shed' || b.k === 'garage' || b.k === 'roof' || b.k === 'ruin' || b.k === 'cons') continue;
+  const u = useOf(b); if (!u) continue;
+  b.u = u; b.k = 'public';
+  // storeys of 5–8 m (buildings.js): a shopping centre (shop=mall) two or three, a big-box shop one, a hall one or two
+  if (!b.tagLv) b.lv = u === 'market' ? 1 : u === 'hall' ? (b.A > 3500 ? 2 : 1) : b.t.shop === 'mall' ? (b.A < 9000 ? 3 : 2) : 1;
+}
 
 // street-facing edges: ground-floor storefronts on main streets, plain doors / blank toward yards
 for (const b of blds) {
@@ -505,6 +568,9 @@ const outB = blds.map(b => {
   if (t.building && t.building !== 'yes') o.bt = t.building;
   if (b.row) o.row = 1; // an untagged townhouse row in a cottage quarter (buildings.js draws it like a terrace)
   if (t.amenity) o.am = t.amenity;
+  if (b.u) o.u = b.u;
+  if (b.old) o.old = 1; // a historic town house (tools.oldTown)
+  if (b.bc && !o.bc) o.bc = b.bc; if (b.rc && !o.rc) o.rc = b.rc; // colours a map rule gave an untagged building
   if (b.parts) o.parts = b.parts.map(p => {
     const pt = p.t, q = { p: flat(p.outer) };
     const ph = num(pt.height), pm = num(pt.min_height), pl = num(pt['building:levels']), pml = num(pt['building:min_level']);
@@ -591,10 +657,43 @@ for (const c of coverPolys) if (c.k === 'resid' || c.k === 'industrial' || c.k =
 //    and sloping down to it (<= 0.5 m/m) within the last metres of shore (no cliffs straight out of the river),
 //  - stored as Int16 (2 cm steps) in public/assets/cherkasy/dem.bin
 const WATER_Y = -1.6, DEMC = 8;
+// a river that falls across the map (tools.riverProfile; Oradea's Crișul Repede drops ~17 m over 9 km) against the one
+// flat water plane: its level along x is the 20th percentile of the raw water samples per 500 m band (a narrow river's
+// samples catch its banks), fitted monotone in the river's direction; the land then keeps its height above the local
+// river instead of being pinned to the shore minimum wherever it lies below one median level.
+// -> levelAt(x), piecewise linear between band centres, held flat past the ends
+function riverProfile(E, W, nx, xOf) {
+  const B = 500, bands = new Map();
+  for (let k = 0; k < W.length; k += 3) {
+    if (!W[k] || !Number.isFinite(E[k])) continue;
+    const b = Math.floor(xOf(k) / B);
+    (bands.get(b) ?? bands.set(b, []).get(b)).push(E[k]);
+  }
+  let pts = [...bands].filter(([, v]) => v.length >= 40).sort((a, c) => a[0] - c[0])
+    .map(([b, v]) => { v.sort((p, q) => p - q); return { x: (b + 0.5) * B, y: v[Math.floor(v.length * 0.2)], w: v.length }; });
+  if (pts.length < 2) return () => pts[0]?.y ?? 0;
+  // pool adjacent violators, weighted by sample count, in the direction of the overall trend
+  const sgn = Math.sign(pts[pts.length - 1].y - pts[0].y) || 1, blocks = [];
+  for (const p of pts) {
+    blocks.push({ y: p.y * sgn, w: p.w, n: 1 });
+    while (blocks.length > 1 && blocks[blocks.length - 2].y > blocks[blocks.length - 1].y) {
+      const b = blocks.pop(), a = blocks[blocks.length - 1];
+      a.y = (a.y * a.w + b.y * b.w) / (a.w + b.w); a.w += b.w; a.n += b.n;
+    }
+  }
+  let i = 0; for (const b of blocks) for (let k = 0; k < b.n; k++) pts[i++].y = b.y * sgn;
+  console.log('river profile', pts.map((p) => `${(p.x / 1000).toFixed(1)}km ${p.y.toFixed(1)}`).join(', '));
+  return (x) => {
+    if (x <= pts[0].x) return pts[0].y;
+    if (x >= pts[pts.length - 1].x) return pts[pts.length - 1].y;
+    let j = 1; while (pts[j].x < x) j++;
+    const a = pts[j - 1], c = pts[j]; return a.y + (c.y - a.y) * (x - a.x) / (c.x - a.x);
+  };
+}
 const DEM = { x0: REGION.x0 - 2500, z0: REGION.z0 - 2500, x1: REGION.x1 + 2500, z1: REGION.z1 + 2500, cell: DEMC };
 {
   const Z = 13, tiles = new Map();
-  const tileImg = (tx, ty) => { const k = tx + ',' + ty; if (tiles.has(k)) return tiles.get(k); const f = new URL(`./raw/dem/${Z}_${tx}_${ty}.png`, import.meta.url); const im = existsSync(f) ? PNG.sync.read(readFileSync(f)) : null; tiles.set(k, im); return im; };
+  const tileImg = (tx, ty) => { const k = tx + ',' + ty; if (tiles.has(k)) return tiles.get(k); const f = new URL(`./dem/${Z}_${tx}_${ty}.png`, RAWDIR); const im = existsSync(f) ? PNG.sync.read(readFileSync(f)) : null; tiles.set(k, im); return im; };
   const elevPx = (gx, gy) => { // global pixel coords at zoom Z
     const tx = Math.floor(gx / 256), ty = Math.floor(gy / 256), im = tileImg(tx, ty); if (!im) return NaN;
     const px = Math.min(255, Math.max(0, gx - tx * 256)), py = Math.min(255, Math.max(0, gy - ty * 256)), i = (py * 256 + px) * 4;
@@ -619,6 +718,7 @@ const DEM = { x0: REGION.x0 - 2500, z0: REGION.z0 - 2500, x1: REGION.x1 + 2500, 
   for (let k = 0; k < W.length; k += 7) { const v = E[k]; if (W[k] && Number.isFinite(v)) wl.push(v); }
   wl.sort((a, b) => a - b);
   const waterElev = wl.length ? wl[Math.floor(wl.length * 0.5)] : 77;
+  const levelAt = CITY?.tools.riverProfile ? riverProfile(E, W, nx, (k) => DEM.x0 + (k % nx) * DEMC) : () => waterElev;
   for (let k = 0; k < E.length; k++) if (!Number.isFinite(E[k])) E[k] = waterElev + 25;
   // building footprints (grown 1 cell) are unknown in a surface model: inpaint them from the ground around (push-pull)
   const U = new Uint8Array(nx * nz);
@@ -651,16 +751,24 @@ const DEM = { x0: REGION.x0 - 2500, z0: REGION.z0 - 2500, x1: REGION.x1 + 2500, 
   const H = new Int16Array(nx * nz);
   let hmin = Infinity, hmax = -Infinity;
   for (let k = 0; k < E.length; k++) {
-    let y = E[k] - waterElev + WATER_Y;
+    let y = E[k] - levelAt(DEM.x0 + (k % nx) * DEMC) + WATER_Y;
     if (W[k]) y = Math.min(y, WATER_Y - 1.5);
     else y = Math.max(WATER_Y + 1.2, Math.min(y, WATER_Y + 1.2 + D[k] * DEMC * 0.5));
     H[k] = Math.round(y * 50); if (!W[k]) { hmin = Math.min(hmin, y); hmax = Math.max(hmax, y); }
   }
-  writeFileSync(new URL('../../public/assets/cherkasy/dem.bin', import.meta.url), Buffer.from(H.buffer));
+  mkdirSync(OUT, { recursive: true });
+  writeFileSync(new URL('./dem.bin', OUT), Buffer.from(H.buffer));
   DEM.scale = 0.02; DEM.waterElev = waterElev;
   console.log('dem', nx, 'x', nz, 'water elev', waterElev.toFixed(1), 'land y', hmin.toFixed(1), '..', hmax.toFixed(1));
 }
 
+// real shop signs (tools.shops, tools/oradea/signs.mjs): named businesses on the street walls of their buildings
+let signs = [];
+if (CITY?.tools.shops && existsSync(new URL('./shops.json', RAWDIR))) {
+  const { placeSigns } = await import('../oradea/signs.mjs');
+  signs = placeSigns({ shops: RAW('shops'), pois: poiEls, blds, proj, region: REGION });
+  console.log('shop signs', signs.length);
+}
 const TS = (polys) => tileSplit(polys, 256, DEM);
 for (const k of Object.keys(coverOut)) coverOut[k] = polysToRings(TS(coverOut[k].map(r => ({ outer: ringPts2(r[0]), holes: r.slice(1).map(ringPts2) }))));
 const map = {
@@ -670,13 +778,13 @@ const map = {
   roads: roads.map(r => ({ p: flat(r.P), w: r.w, c: r.cls, k: r.kind, n: r.name || undefined, br: r.br || undefined, ow: r.ow || undefined, ln: r.lanes || undefined, tw: r.tw || undefined })),
   asphalt: polysToRings(TS(simp(asphalt, 0.15))), walks: polysToRings(TS(simp(walks, 0.15))), dirt: polysToRings(TS(simp(dirt, 0.2))),
   land: polysToRings(TS(landCut)), junctions, water: polysToRings(simp(clip(water.flatMap(p => [p.outer, ...p.holes]), [rectRing({ x0: REGION.x0 - 3000, x1: REGION.x1 + 3000, z0: REGION.z0 - 3000, z1: REGION.z1 + 3000 })], ClipperLib.ClipType.ctIntersection, ClipperLib.PolyFillType.pftEvenOdd), 0.8)),
-  cover: { ...coverOut, pond: polysToRings(simp(ponds, 0.4)) }, zones: coverLu, rails, trees, pois,
+  cover: { ...coverOut, pond: polysToRings(simp(ponds, 0.4)) }, zones: coverLu, rails, trees, pois, ...(trams.length ? { trams } : {}), ...(signs.length ? { signs } : {}),
   parking: parkingLots,
 };
-mkdirSync(new URL('../../public/assets/cherkasy/', import.meta.url), { recursive: true });
+mkdirSync(OUT, { recursive: true });
 // buildings go to their own file: the published artifact takes text files up to 16 MB each (city.js joins them)
 const { buildings, ...rest } = map;
 const txt = JSON.stringify({ ...rest, buildingsFile: 'map_buildings.json' }), txtB = JSON.stringify(buildings);
-writeFileSync(new URL('../../public/assets/cherkasy/map.json', import.meta.url), txt);
-writeFileSync(new URL('../../public/assets/cherkasy/map_buildings.json', import.meta.url), txtB);
+writeFileSync(new URL('./map.json', OUT), txt);
+writeFileSync(new URL('./map_buildings.json', OUT), txtB);
 console.log('map.json', (txt.length / 1e6).toFixed(1), 'MB + map_buildings.json', (txtB.length / 1e6).toFixed(1), 'MB');

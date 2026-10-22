@@ -17,6 +17,8 @@
 //     engine.setPaused(bool)              suspends the context (the city map is open); gestures meanwhile do not wake it
 //     engine.has(id), engine.index        what index.json lists
 //   Every file is levelled at generation time, so the index `gain` and the per-call `vol` are the whole mix.
+import { CITY } from '../city.js';
+
 const VOICE = new Set(['vo', 'pax']); // index groups that are speech (dispatcher / taxi passenger)
 
 export function createAudioEngine({ base = 'assets/audio/', silent = false } = {}) {
@@ -25,7 +27,7 @@ export function createAudioEngine({ base = 'assets/audio/', silent = false } = {
   const L = { x: 0, y: 0, z: 0, rx: 1, rz: 0 };
   let radio = null, radioEnd = 0;
 
-  const indexReady = silent ? Promise.resolve() : fetch(base + 'index.json').then((r) => (r.ok ? r.json() : {})).then((j) => { index = j; }).catch(() => {});
+  const indexReady = silent ? Promise.resolve() : fetch(base + 'index.json').then((r) => (r.ok ? r.json() : {})).then((j) => { index = CITY?.voices === false ? Object.fromEntries(Object.entries(j).filter(([, v]) => !VOICE.has(v.g))) : j; }).catch(() => {});
 
   const url = (id, k) => `${base}${index[id].g}/${id}_${k}.mp3`;
   function fetchBuf(id, k) { // -> Promise<AudioBuffer | null>, once per file

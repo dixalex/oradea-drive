@@ -25,6 +25,7 @@ import { MB } from '../../kit/mesh.js';
 import { canvasTex } from './sculpt.js';
 import { rng } from './geo.js';
 import { RAIL as DAM_RAIL } from './dam_data.js';
+import { CITY } from '../../city.js';
 
 export const TRACK = { half: 0.76, bed: 0.3, foot: 0.13, top: 1.55, toe: 2.55, tie: 0.07, railH: 0.16, railW: 0.075 };
 const STEP = 8, TILE = 512, SIDES = [1, -1];
@@ -33,7 +34,7 @@ const NOT_WIRED = [[-2027.1, 820.8], [-3162.4, 915.3]];
 
 // ------------------------------------------------------------------------------------------------ lines
 export function railLines(map, geo) {
-  const dam = geo ? DAM_RAIL.map(([la, lo]) => geo.toXZ(la, lo)) : [];
+  const dam = geo && !CITY ? DAM_RAIL.map(([la, lo]) => geo.toXZ(la, lo)) : [];
   const nearDam = (x, z) => dam.some((p, i) => i > 0 && segDist(x, z, dam[i - 1], p) < 6);
   const out = [];
   for (const r of map.rails ?? []) {
@@ -48,7 +49,7 @@ export function railLines(map, geo) {
   }
   for (const L of out) {
     const [x0, z0] = L.pts[0];
-    L.wired = !L.sv && !L.br && L.pts.every(([x]) => x < -1390) && !NOT_WIRED.some(([a, b]) => Math.hypot(a - x0, b - z0) < 0.5);
+    L.wired = !CITY && !L.sv && !L.br && L.pts.every(([x]) => x < -1390) && !NOT_WIRED.some(([a, b]) => Math.hypot(a - x0, b - z0) < 0.5);
   }
   return out;
 }

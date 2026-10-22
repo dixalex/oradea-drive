@@ -6,7 +6,8 @@
 // Exports
 //   buildBuildings({ map, solids, zips, heightAt, skip, dress, tile = 256, overhangFlag = 1 }) -> result
 //   buildBuildingsAsync({ ...same, sliceMs = 40, onProgress(f) }) -> Promise<result>  (time-sliced, yields between slices)
-//     map.buildings[]: { id, p:[x0,z0,...], holes?, k, lv, h?, mh?, rs?, rc?, bc?, tint?, mat?, f?, name?, bt?, am?, row?, parts? }
+//     map.buildings[]: { id, p:[x0,z0,...], holes?, k, lv, h?, mh?, rs?, rc?, bc?, tint?, mat?, f?, name?, bt?, am?, row?, u?, parts? }
+//       u: 'mall' | 'hall' | 'market' – a use the map tools give some 'public' buildings (big boxes, not blocks)
 //     heightAt(x, z) -> terrain y            skip: Set of ids replaced by hand-made landmarks (not emitted)
 //     dress({ t, S, Z, b, A, outer, holes, base, H, r, pitched }) optional per-building hook (facade kit); S / Z are
 //       the solids / zips arguments as given, t the building's tile
@@ -209,6 +210,22 @@ export function archetype(b, r) {
       Object.assign(A, { roof: r() < 0.6 ? 'hip' : 'gable', roofCol: choose(r, ROOF_TONES), pitch: 0.55 + r() * 0.25, overhang: 0.4 });
       break;
     case 'public': {
+      if (b.u === 'mall') { // malls and big-box shops (`u`, build_map.mjs): tall storeys clad blank over a glazed shop band
+        look = choose(r, [[3, LOOK.white], [2, LOOK.greige], [2, LOOK.metal], [1, LOOK.panel], [1, LOOK.metalBlue]]);
+        Object.assign(A, { floorH: 5.2, bayW: 6, winW: 0.7, winH: 0.4, plinth: 0.3, parapet: 1.4, depth: 0.08, style: STYLE.BLANK, shopAll: true });
+        break;
+      }
+      if (b.u === 'hall') { // sports halls and arenas: one tall storey with a high ribbon of windows
+        look = choose(r, [[2, LOOK.metal], [2, LOOK.panel], [1, LOOK.white], [1, LOOK.metalBlue]]);
+        Object.assign(A, { floorH: 8, bayW: 5, winW: 0.8, winH: 0.22, plinth: 0.4, parapet: 0.8, depth: 0.08, style: STYLE.RIBBON });
+        break;
+      }
+      if (b.u === 'market') { // market halls: one storey of stalls under a low roof
+        look = choose(r, [[2, LOOK.cream], [1, LOOK.ochre], [1, LOOK.white]]);
+        Object.assign(A, { floorH: 4.8, bayW: 4.5, winW: 0.75, winH: 0.5, plinth: 0.2, parapet: 0.5, depth: 0.12, style: STYLE.RIBBON, shopAll: true });
+        if (r() < 0.6) Object.assign(A, { roof: 'gable', roofCol: choose(r, [[2, '#8c8f8b'], [1, '#6d2c2a']]), pitch: 0.25, overhang: 0.8 });
+        break;
+      }
       const edu = /school|kindergarten|college|university/.test((b.bt ?? '') + ' ' + (b.am ?? ''));
       look = edu ? choose(r, [[1, LOOK.paleYellow], [1, LOOK.mint], [1, LOOK.peach], [1, LOOK.paleBlue]])
         : choose(r, [[3, LOOK.panel], [2, LOOK.greige], [1.5, LOOK.silicate], [1, LOOK.lime], [1, LOOK.cream], [1, LOOK.yellowBrick]]);
@@ -238,6 +255,11 @@ export function archetype(b, r) {
     default: // ruins, construction sites, anything unknown
       look = LOOK.panel; Object.assign(A, { floorH: 3, style: STYLE.BLANK });
   }
+  // a historic town house (`old`, the map tools' old quarters): tall storeys, tall windows under cornices on a stone
+  // plinth, shops on every street side, a tiled hip roof where the footprint allows one, else a tile-coloured flat one
+  if (b.old && (b.k === 'apt' || b.k === 'public')) Object.assign(A, { floorH: 3.9, bayW: 3.7, winW: 0.4, winH: 0.62, plinth: 1.0,
+    parapet: 0, lintel: 2, depth: 0.3, base: LAYER.GRANITE, resid: 1, style: STYLE.PUNCHED, glass: 0, machine: false, stairs: false,
+    shopAll: true, roof: 'hip', pitch: 0.6, overhang: 0.25, roofCol: '#8a3b28', flatRoof: true });
   A.layer = look[0];
   A.tint = look[1].map((v) => v * (0.94 + r() * 0.1));
   if (b.bc) { A.layer = LAYER.STUCCO; A.tint = hexLin(b.bc).map((v) => 0.3 + Math.pow(v, 0.45) * 0.85); }
@@ -250,6 +272,12 @@ export function archetype(b, r) {
     if (A.roof !== 'flat') { A.roofCol ??= '#8c8f8b'; A.pitch ??= 0.45; A.overhang ??= 0.3; }
   }
   return A;
+}
+
+// a muted tile colour over the grey roof layer: the hue of `hex`, a third of the way to grey, at the roof's own brightness rk
+function tileTint(hex, rk) {
+  const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255), m = Math.max(...c, 1e-3);
+  return c.map((v) => (0.3 + 0.7 * v / m) * (0.62 + rk * 0.5));
 }
 
 // ---------------------------------------------------------------------------------------------- sinks
@@ -389,14 +417,14 @@ function* generate(o) {
     const FACADE_KEYS = ['floorH', 'bayW', 'winW', 'winH', 'layer', 'base', 'resid', 'lintel', 'glass', 'depth', 'margin', 'tint', 'plinth'];
     const facadeOf = Object.fromEntries(FACADE_KEYS.map((key) => [key, A[key]]));
     const wallP = (floorLine, top, extra = {}) => Object.assign({}, facadeOf, { seed, baseY: floorLine, topY: top }, extra);
-    const shopKind = (b.k === 'apt' || b.k === 'public') && A.lv >= 2;
+    const shopKind = (b.k === 'apt' || b.k === 'public') && (A.lv >= 2 || A.shopAll); // shopAll: malls / markets, shops on every street side
     const walls = (rings, y0, top, p, flagsStr, noShop) => {
       const plain = -(A.plinth + A.floorH), shopH = Math.max(3.6, A.plinth + A.floorH);
       rings.forEach((R, ri) => edgesOf(R).forEach(([a, c, len, i]) => {
         if (len < 0.05) return;
         const street = ri === 0 && flagsStr ? flagsStr[i] : '0'; // '2' = main street edge (build_map.mjs)
         const style = len < 2.2 && A.style !== STYLE.CURTAIN ? STYLE.BLANK : A.style;
-        F.wall(a[0], a[1], c[0], c[1], y0, top, p, style, !noShop && shopKind && street === '2' ? shopH : plain);
+        F.wall(a[0], a[1], c[0], c[1], y0, top, p, style, !noShop && shopKind && (street === '2' || (A.shopAll && street === '1')) ? shopH : plain);
       }));
     };
     const summary = (top, y0 = yB) => {
@@ -479,7 +507,7 @@ function* generate(o) {
       const roofY = H - par * 0.85;
       const rk = 0.5 + r() * 0.2;
       const layer = noShop ? LAYER.ROOF_MEMBRANE : choose(r, [[3, LAYER.ROOF_MEMBRANE], [2, LAYER.ROOF], [1, LAYER.ROOF_GRAVEL]]);
-      F.fill(outer, holes, roofY, { layer, tint: [rk, rk, rk * 0.98] });
+      F.fill(outer, holes, roofY, A.flatRoof ? { layer: LAYER.ROOF, tint: tileTint(A.roofCol, rk) } : { layer, tint: [rk, rk, rk * 0.98] });
       if (par > 0) { // inner face of the parapet
         const ip = { ...p, tint: A.tint.map((v) => v * 0.82) };
         for (const R of [outer, ...holes]) for (const [a, c] of edgesOf(R)) F.wall(c[0], c[1], a[0], a[1], roofY, H, ip, STYLE.BLANK, -0.01); // reversed: faces the roof

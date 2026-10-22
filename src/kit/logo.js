@@ -5,9 +5,11 @@
 //     plate: { bg, edge } paints a number-plate blank (rounded, rimmed) behind the logo
 //     .userData.aspect: height / width of the whole texture
 import * as THREE from 'three';
+import { CITY } from '../city.js';
 
 const ASPECT = { everlabs: 78 / 392, tors: 1, urban: 256 / 543 }; // viewBox h / w, so the texture has its final shape before the file arrives
-const url = (name) => `${import.meta.env?.BASE_URL ?? '/'}assets/brand/${name}.svg`;
+// a city may draw another file under a name (CITY.logos), at the same aspect
+const url = (name) => `${import.meta.env?.BASE_URL ?? '/'}assets/brand/${CITY?.logos?.[name] ?? name}.svg`;
 
 function tinted(img, w, h, color) { // the logo alone, every pixel set to `color` at its own alpha
   const cv = Object.assign(document.createElement('canvas'), { width: w, height: h }), x = cv.getContext('2d');

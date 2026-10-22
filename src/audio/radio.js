@@ -3,12 +3,16 @@
 //
 //   createRadio({ engine, base? }) -> radio
 //     engine: src/audio/engine.js (the music goes through its `music` bus, so it ducks under the dispatcher)
-//     base: folder with tracks.json ([{ file, title, artist }]) and the files, default 'assets/radio/'
+//     base: folder with tracks.json ([{ file, title, artist }]) and the files, default 'assets/radio/' (a city's CITY.radio);
+//       an entry with `url` instead of `file` is a live stream (another city's local stations): played cross-origin with
+//       CORS, so it still goes through the engine's music bus
 //   radio.toggle()  on / off (on resumes the current track where it stopped)
 //   radio.next()    the next track (turns the radio on)
 //   radio.state -> { on, loading, title, artist, i, n, empty }   radio.onChange = fn(state)
 //   The order is shuffled once per session; a track that ends or fails moves on to the next.
-export function createRadio({ engine, base = 'assets/radio/' }) {
+import { CITY } from '../city.js';
+
+export function createRadio({ engine, base = CITY?.radio ?? 'assets/radio/' }) {
   let list = null, order = [], at = 0, on = false, loading = false, el = null, wired = false, fails = 0;
   const state = () => {
     const t = list?.[order[at]];
@@ -20,7 +24,7 @@ export function createRadio({ engine, base = 'assets/radio/' }) {
     if (list) return list;
     try {
       const r = await fetch(base + 'tracks.json');
-      list = r.ok ? (await r.json()).filter((t) => t?.file) : [];
+      list = r.ok ? (await r.json()).filter((t) => t?.file || t?.url) : [];
     } catch { list = []; }
     order = list.map((_, i) => i);
     for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
@@ -46,7 +50,9 @@ export function createRadio({ engine, base = 'assets/radio/' }) {
   }
   function load(i) {
     at = (i + list.length) % list.length;
-    player().src = base + encodeURI(list[order[at]].file);
+    const t = list[order[at]];
+    if (t.url) player().crossOrigin = 'anonymous'; // a station's stream: CORS, or Web Audio would hear silence
+    player().src = t.url ?? base + encodeURI(t.file);
   }
   async function play() {
     loading = true; changed();

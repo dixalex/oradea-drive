@@ -1,0 +1,11 @@
+Follow /Users/alexandertinyaev/Sites/oradea-drive/tools/oradea/agents/BRIEF.md (read it fully first, especially the Memory rule and the new note on generic park furniture; it overrides parts of docs/agent-brief.md).
+
+Slug: pentecostal
+
+Oradea's Pentecostal churches (the city is one of Romania's main Pentecostal centres) and the other free churches not taken by others: Seventh-day Adventist, Brethren (Creștini după Evanghelie), the Jehovah's Witnesses' Kingdom Hall w291005315 (-1007,-1451), the Latter-day Saints' chapel n10167110667 (-288,175). The Baptist churches are another agent's (sites/baptist: Emanuel, BBSO and the rest); Orthodox, Catholic and Reformed are other agents' too. You may read their kits for ideas but never import from or edit them.
+
+Known Pentecostal churches: Biserica Betania w261607829 (-899,-974); Filadelfia, Str. Ana Ipătescu 11 (probably not tagged as a church in OSM: find its building in map_buildings.json by the address's coordinates). Find the others by research (Betel, Elim, Maranata, Harul, Speranța and so on: the Comunitatea Regională Penticostală Oradea list, the churches' own sites, OSM), and place each on its real building.
+
+Do it in two tiers: (a) the 2–4 largest Pentecostal churches (Filadelfia, Betania and the next biggest) hand-built from photos, as they look today; (b) every other one from a parametric modern-church kit (a hall church with a gable front, a cross, a simple tower or none, the glazing and colours from photos where you find them), sized from its OSM outline. Lettering on a building may show the church's name as it appears there.
+
+Places: add the tier-(a) churches that src/world/oradea/places.js lacks to SITE.places (kind 'sight', bilingual via t()). Budget: tier (a) ≤ 20k vertices each, kit churches ~2–4k each, ≤ 12 draw calls for the whole site (share materials) – draw calls matter: the game is heading for phones, where the whole frame should stay near 150–200; merge small far buildings into shared meshes rather than one group each.

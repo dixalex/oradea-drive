@@ -8,11 +8,12 @@
 //     has: the place has a model here; open: builds it (a spinner meanwhile) and shows it, close: back to the map;
 //     tick: steps the open view n frames by hand (scripted checks, a hidden tab); view: its scene, camera, controls (debugging)
 import { track } from '../analytics.js';
+import { ASSETS, CITY } from '../city.js';
 
 // place id -> [site module, builder, terrain hook?]: the builders and hooks city.js calls (the hook runs on a fresh
 // height field before the build, as in the city)
 const LM = ['landmarks', 'buildLandmarks', 'levelStadium'];
-const SITES = {
+const SITES = CITY?.peek ?? { // another city lists its own (Oradea: world/oradea/peek.js, modules in its sites/)
   mykhailo: LM, tvtower: LM, chimney: LM, arena: LM, rivport: LM, hyperboloid: LM,
   andriy: ['andriy', 'buildAndriy'], druzhba: ['druzhba', 'buildDruzhba'], pagorb: ['pagorb', 'buildPagorb'],
   roses: ['rosevalley', 'buildRoseValley'], zamkova: ['zamkova', 'buildZamkova', 'shapeZamkova'], yalynka: ['yalynka', 'buildYalynka'],
@@ -79,7 +80,8 @@ const SITES = {
   maiboroda: ['maiboroda', 'buildMaiboroda'], simonenko: ['simonenko', 'buildSimonenko'],
   rafinad: ['rafinad', 'buildRafinad'], brewery: ['brewery', 'buildBrewery'], school15: ['kobzarska', 'buildKobzarska'],
 };
-const MODULES = import.meta.glob('../world/cherkasy/*.js'); // lazy: a module's chunk loads on its first peek
+const MODULES = import.meta.env.VITE_CITY === 'oradea' ? import.meta.glob('../world/oradea/sites/*.js') : import.meta.glob('../world/cherkasy/*.js'); // lazy: a module's chunk loads on its first peek
+const MODDIR = CITY ? '../world/oradea/sites/' : '../world/cherkasy/';
 const MIN_R = 45, MAX_R = 170, POINT_R = 90; // crop radius round the place, m (POINT_R: a place on a point, no footprint)
 const RISE = 1.1, TILT = 1.6;   // the rise out of the map and the camera's tilt from straight down, s
 
@@ -107,7 +109,7 @@ export function createPeek({ container, map, painter, geo }) {
       import('three/addons/utils/BufferGeometryUtils.js'), import('../kit/textures.js'), import('../world/facade.js'),
       import('../world/materials.js'), import('../world/cherkasy/ground.js'), import('../world/collision.js'),
       import('../render/daylight.js'),
-      fetch(`${import.meta.env?.BASE_URL ?? '/'}assets/cherkasy/dem.bin`).then((r) => r.arrayBuffer()).then((b) => new Int16Array(b)),
+      fetch(`${ASSETS}dem.bin`).then((r) => r.arrayBuffer()).then((b) => new Int16Array(b)),
     ]);
     // a plain depth buffer (one small scene; decalBias in the sites reads which one it is); no post chain here, so AA and
     // tone mapping are the renderer's
@@ -158,7 +160,7 @@ export function createPeek({ container, map, painter, geo }) {
     track('peek3d', { place: place.id });
     try {
       const C = await loadCore();
-      const mod = await MODULES[`../world/cherkasy/${spec[0]}.js`]?.();
+      const mod = await MODULES[`${MODDIR}${spec[0]}.js`]?.().then((m) => m.SITE ?? m); // an Oradea module exports SITE
       if (my !== seq) return; // closed meanwhile
       await nextFrame(); // the spinner gets a frame before the synchronous build
       const disc = await groundDisc(C, place.x, place.z, Math.max(discRadius(place) * 1.8, 140), my); // the map tiles come in over frames
@@ -212,7 +214,7 @@ export function createPeek({ container, map, painter, geo }) {
     const lift = new THREE.Group(); lift.position.y = -y0;
     pivot.add(lift); lift.add(site);
     const G = Math.max(R * 1.8, 140);
-    const skip = new Set(Object.entries(mod).filter(([k, v]) => k.endsWith('_SKIP') && v instanceof Set).flatMap(([, v]) => [...v]));
+    const skip = new Set([...Object.entries(mod).filter(([k, v]) => k.endsWith('_SKIP') && v instanceof Set).flatMap(([, v]) => [...v]), ...(mod.skip ?? [])]);
     const blocks = neighbours(C, cx, cz, Math.min(G * 0.9, R + 20), heightAt, skip, place); // the next door only: further out they loom in front
     if (blocks) lift.add(blocks);
     drape(C, disc, cx, cz, G, heightAt);
