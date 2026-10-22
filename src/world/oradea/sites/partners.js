@@ -11,7 +11,7 @@ import * as THREE from 'three';
 import { nightK } from '../../../render/daylight.js';
 
 export const TABLE = [
-  { id: 'viatanoua', bld: 420863618, street: 'Strada Nicolae Jiga', sign: 'VIAȚA NOUĂ · BCUO' },
+  { id: 'viatanoua', bld: 420863618, door: [-36.5, -1066.6] }, // before the yard gate east of the house (viatanoua/house.js GATE), the way in
   { id: 'mobiversal', bld: 3000001278, street: 'Strada Thurzó Sándor' }, // no OSM outline: the generator's house round the pin
   { id: 'casaminunata', bld: 436834224, street: 'Strada Traian Lalescu', sign: 'CASA MINUNATĂ' },
   // the hand-built churches (sites/baptist): the ring in front of the real entrance – BBSO's concrete entrance block on the
