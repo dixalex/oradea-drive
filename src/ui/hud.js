@@ -51,6 +51,7 @@ import { enuToWorld } from '../render/daylight.js';
 import { createMapPainter, COL, LEVELS, layAlong } from './mapdraw.js';
 import { createBigMap } from './bigmap.js';
 import { botLink, BOT_NAME } from './botlink.js';
+import { CITY } from '../city.js';
 import './hud.css';
 import './quests.css'; // the quest chip, card and book (game/quests.js builds them; node tests import it without css)
 
@@ -78,6 +79,7 @@ const HELP = [
   ['Інше', [['H', 'ця довідка'], ['F2', 'сховати / показати інтерфейс'], ['T', 'час доби: ранок / день / вечір'], ['G', 'графіка простіша (з низької – знову висока)'], ['F9', 'якість графіки (по колу)']]],
   ['Геймпад', [['Лівий стік', 'кермо, газ'], ['Правий стік', 'огляд'], ['Курки', 'газ / гальмо'], ['A / B', 'ручник, вгору / пікірування'],
     ['RB', 'крила + тяга'], ['R3', 'сигнал'], ['X / Y', 'на дорогу / камера'], ['Start', 'довідка']]],
+  ...(CITY?.help ?? []), // a city build's own groups, already in its language
 ];
 const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
 const keysHtml = (k) => k.split(' / ').map((alt) => (alt.split(' ').every((w) => w.length <= 2) ? alt.split(' ') : [alt])

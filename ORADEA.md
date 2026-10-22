@@ -48,10 +48,20 @@ updates merge cleanly. Oradea lives beside them, and one switch picks the city:
 | `tools/cherkasy/city.mjs` | `CITY=oradea` points the map tools at the Oradea config, raw folder and output |
 | `vite.config.js` | Oradea page head, RO / EN switch, the string pass, and what dist/ leaves out |
 
+## Feedback and the organiser
+
+The game runs at https://oradea.drumulvietii.ro (a custom domain on the Worker; workers.dev stays on), a Drumul Vieții
+project. Upstream's Telegram-bot links become a WhatsApp chat (`config.js` `feedback`): the green "I WhatsApp" chip, key
+**I** (`src/world/oradea/feedback.js`), the big map's link, an "Ideas and requests" group on the controls card (`help`) and
+a note on the start card (`consentNote`). The player's plate carries the NGO's logo in its own colours
+(`public/assets/brand/oradea-plate.svg`, `logoColours`). The start card links this code (`source`, AGPL-3.0 sec. 13) and
+names Cloudflare Web Analytics (cookieless), switched on in the Cloudflare dashboard.
+
 ## Shared files touched (one or two lines each, all `CITY`-guarded)
 
 `main.js`, `mapview.js`, `audio/engine.js`, `audio/radio.js`, `render/daylight.js`, `npc/lanes.js`, `npc/traffic.js`,
-`npc/vehicles.js`, `kit/logo.js`, `ui/peek3d.js` (`CITY.peek`, the Oradea module folder), `game/quests/index.js`, `world/buildings.js` (the `u` looks: additive
+`npc/vehicles.js`, `kit/logo.js` (`CITY.logoColours`), `ui/botlink.js` (`CITY.feedback`), `ui/hud.js` (`CITY.help`), `ui/consent.js`
+(`CITY.consentNote`, `CITY.source`), `ui/peek3d.js` (`CITY.peek`, the Oradea module folder), `game/quests/index.js`, `world/buildings.js` (the `u` looks: additive
 cases Cherkasy never reaches; `b.old` and the flat tiled roof tint for the old town), `world/cherkasy/{ground, places, signs, station_rails, greenery}.js` (greenery: the
 optional `real` canopy gate),
 `tools/cherkasy/{fetch_osm, fetch_dem, build_map}.mjs` (fetch_osm: the `shops` part; build_map: `riverProfile`, `useOf`, `heights`, `oldTown`, `signs`), `package.json`. A merge

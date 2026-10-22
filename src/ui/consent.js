@@ -7,6 +7,7 @@
 //   showConsent({ overlay }) -> { accepted: Promise<void>, ready(), needed: bool }
 //     overlay: the #loading element (its .msg keeps the load progress); ready() enables the button and any key / click
 import './consent.css';
+import { CITY } from '../city.js';
 
 const KEY = 'cherkasy.consent', TERMS = 1;
 const KEYS = [
@@ -37,7 +38,9 @@ export function showConsent({ overlay }) {
     <button type="button" disabled>Завантаження…</button>
     <div class="c-next">Натисніть будь-яку клавішу або клацніть, щоб почати: починаючи гру, ви даєте згоду з цими умовами.<br>
       Розкладка не важлива – кирилиця теж працює. У грі <kbd>H</kbd> покаже всі клавіші керування.</div>
-    <div class="c-foot">Відкритий код, GNU AGPL-3.0</div>`;
+    ${CITY?.consentNote ? `<div class="c-note">${CITY.consentNote}</div>` : ''}
+    <div class="c-foot">Відкритий код, GNU AGPL-3.0</div>
+    ${CITY?.source ? `<div class="c-foot"><a href="${CITY.source}" target="_blank" rel="noopener">${CITY.source.replace(/^https:\/\//, '')}</a></div>` : ''}`;
   overlay.classList.add('with-consent');
   overlay.querySelector('.bar')?.after(card);
   const btn = card.querySelector('button');

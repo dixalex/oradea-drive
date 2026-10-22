@@ -15,18 +15,30 @@
 //   pavingCentre: [x, z] the centre whose pavements are pavers, not patched asphalt (cherkasy/ground.js)
 //   places: map places (places.js);  quests: the quest book's quests (game/quests/index.js)
 //   peek: the phone page's 3D models, place id -> site module (peek.js, ui/peek3d.js)
-//   logos: brand files drawn under another name (kit/logo.js): the cars' Everlabs plate (a Cherkasy partner) is a plate
+//   logos: brand files drawn under another name (kit/logo.js): the cars' Everlabs plate (a Cherkasy partner) carries the
+//     organiser's logo, Drumul Vieții (public/assets/brand/oradea-plate.svg, from the NGO's LogoH-UA.svg);  logoColours: those drawn in their own colours
 //   vehicleAtlas: paints the traffic's plates, signs and ads (vehicles.js)
 //   radio: folder of the car radio's tracks.json – Oradea's live stations (audio/radio.js)
 //   voices: false – no dispatcher / passenger lines (upstream's are Ukrainian; audio/engine.js drops them from the index)
+//   feedback: where the game's "Bot" links go instead of upstream's Telegram bot – a WhatsApp chat with the organiser
+//     (Drumul Vieții), for ideas, bugs and requests (ui/botlink.js; the chip and the big map's link, vite.config.js; key I,
+//     world/oradea/feedback.js);  help: extra groups for the controls card (ui/hud.js HELP);  consentNote: a line of HTML
+//     under the start card's terms (ui/consent.js);  source: where this build's code is (AGPL-3.0 sec. 13), linked there
 import { PLACES } from './places.js';
 import { vehicleAtlas } from './vehicles.js';
 import { PEEK } from './peek.js';
+import { t } from '../../i18n.js';
 
 export default {
   id: 'oradea',
   name: 'Oradea Drive',
   assets: 'assets/oradea/',
+  feedback: 'https://wa.me/40741849122',
+  source: 'https://github.com/dixalex/oradea-drive/tree/oradea',
+  help: [[t('Idei și cereri', 'Ideas and requests'), [['I', t('WhatsApp: o idee, o greșeală sau ceva ce vrei în joc (școala ta, biserica, firma, o clădire)',
+    'WhatsApp: an idea, a bug, or something you want in the game (your school, church, business, a building)')]]]],
+  consentNote: t('💬 Ai o idee, ai găsit o greșeală sau vrei ceva în joc – școala ta, biserica, firma, o clădire? Scrie-ne pe WhatsApp: tasta <kbd>I</kbd> sau butonul verde de sus. Oradea Drive e un proiect Drumul Vieții.',
+    '💬 Got an idea, found a bug, or want something in the game – your school, church, business or a building? Message us on WhatsApp: press <kbd>I</kbd> or the green button at the top. Oradea Drive is a Drumul Vieții project.'),
   tools: {
     bbox: [47.005, 21.82, 47.11, 22.03],
     dem: { s: 46.96, n: 47.15, w: 21.76, e: 22.10 },
@@ -59,7 +71,7 @@ export default {
   places: PLACES,
   peek: PEEK,
   quests: [],
-  logos: { everlabs: 'oradea-plate' },
+  logos: { everlabs: 'oradea-plate' }, logoColours: ['everlabs'],
   vehicleAtlas,
   radio: 'assets/oradea/radio/',
   voices: false,

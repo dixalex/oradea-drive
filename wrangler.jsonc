@@ -3,5 +3,8 @@
 {
   "name": "oradea-drive",
   "compatibility_date": "2025-09-01",
-  "assets": { "directory": "./dist" }
+  "assets": { "directory": "./dist" },
+  // the public address under the organiser's domain (zone drumulvietii.ro on this account); workers.dev keeps working
+  "routes": [{ "pattern": "oradea.drumulvietii.ro", "custom_domain": true }],
+  "workers_dev": true
 }

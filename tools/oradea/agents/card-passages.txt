@@ -1,0 +1,24 @@
+Card: Oradea's road underpasses and overpasses (follow BRIEF.md for research order, budgets, verification and the report)
+
+Goal: the passages Oradea built in recent years show in the game and can be driven: road underpasses with the surface
+street on top, and road overpasses (over roads and the railway) on real decks instead of flat on the ground.
+
+What the data shows (2026-10-22, tools/cherkasy/raw/oradea/roads.json):
+- OSM has the underpasses as highway ways with tunnel=yes, and tools/cherkasy/build_map.mjs:209 drops every tunnel road, so
+  none reach map.json: Pasajul Magheru, the ones at Piața Emanuil Gojdu, Piața 1 Decembrie, Strada Dimitrie Cantemir,
+  Strada Tudor Vladimirescu (9 primary, 4 tertiary, 2 secondary, 1 trunk pieces), pedestrian Pasajul Vulturul Negru,
+  ~19 footway tunnels. Pasajul Oneștilor and Pasajul Crișul are tagged highway=construction (check whether they opened).
+- Road bridges over roads and the railway (Calea Aradului, Cantemir, Ogorului, Velența, the ring road...) are drawn on the
+  terrain, so the car crosses the tracks at grade. Only the river bridges have decks (src/world/oradea/river.js).
+
+Patterns to reuse from the Cherkasy engine (read them first): world/cherkasy/overpass.js (shapeOverpass: a cutting for
+the lower road, a deck over it, deckAt), khimbridge.js and odeskabridge.js (viaduct decks, ramps, retaining walls),
+railcut.js (a cut as its own height function that hf.heightAt takes the minimum with, ground triangles re-laid after
+creation), bridgekit.js (shared helpers), npc/lanes.js opts.deckAt (traffic rides decks). An underpass is the new case: a
+trench with portals and retaining walls, the lower road in it, the surface road kept on a deck or slab over the portal
+span; lanes need both levels.
+
+Do: confirm with sources which passages exist and when they opened (primaria-oradea.ro, local press); keep the shared
+build_map change behind a CITY guard (Oradea only) so Cherkasy is unchanged; one site module per passage group under
+src/world/oradea/sites/ with SITE.shape for the terrain; a test per module; screenshots from the driver's seat going
+through each passage. Ask before touching shared engine files beyond a guarded one-liner.

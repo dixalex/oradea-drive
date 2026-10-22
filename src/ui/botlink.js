@@ -1,10 +1,14 @@
 // Links into the game's Telegram bot (bot/ in the repo): requests, ads and feedback end up as GitHub issues there.
 // A map point travels as the /start payload in lat/lon (1e-5°), the only frame the bot and Google Maps share.
-//   BOT_NAME, botLink(start?) -> t.me URL;  latLon(frame, x, z) -> { lat, lon };  worldXZ(frame, lat, lon) -> { x, z }
+//   BOT_NAME, botLink(start?) -> t.me URL (or, in a city build with CITY.feedback, that chat with a greeting);  latLon(frame, x, z) -> { lat, lon };  worldXZ(frame, lat, lon) -> { x, z }
 //     (frame: map.json's { lat0, lon0, rot })
 //   pointLink(frame, x, z, flow = 'imp' | 'ad') -> t.me URL that opens that flow at that point
+import { CITY } from '../city.js';
+import { t } from '../i18n.js';
 export const BOT_NAME = 'driver_game_bot';
-export const botLink = (start = '') => `https://t.me/${BOT_NAME}${start ? `?start=${start}` : ''}`;
+// a city build with its own feedback chat (CITY.feedback, a wa.me link) sends every bot link there, with a greeting typed
+export const botLink = (start = '') => CITY?.feedback ? `${CITY.feedback}?text=${encodeURIComponent(t('Salut! Despre Oradea Drive: ', 'Hi! About Oradea Drive: '))}`
+  : `https://t.me/${BOT_NAME}${start ? `?start=${start}` : ''}`;
 
 const M_PER_DEG = 111320;
 export function latLon({ lat0, lon0, rot }, x, z) { // undo tools/cherkasy/build_map.mjs: rotate back to east / north

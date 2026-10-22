@@ -38,6 +38,7 @@ import { liftBanks, shapeBridges, buildBridges } from './river.js';
 import { buildTrams } from './trams.js';
 import { buildShopSigns } from './shopsigns.js';
 import { buildParks } from './parks.js';
+import { installFeedbackKey } from './feedback.js';
 import { PLACES } from './places.js';
 import CONFIG from './config.js';
 import { ASSETS } from '../../city.js';
@@ -100,6 +101,7 @@ async function loadSites() {
 }
 
 export async function buildCity({ scene, renderer, onProgress = null, params = new URLSearchParams(globalThis.location?.search ?? '') }) {
+  installFeedbackKey(); // key I -> the WhatsApp feedback chat (feedback.js)
   const t0 = performance.now(), stages = {};
   let tPrev = t0;
   const stage = (name, f, text) => {
