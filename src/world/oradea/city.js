@@ -10,6 +10,10 @@
 // none of the Cherkasy hand-built sites, terrain hooks, shore strip or skip lists. Oradea's own hand-built places are
 // modules in ./sites/ (contract at SITE_MODULES below); the generic ones (railways, river bridges, trams, shop signs) are in SITES. When upstream improves the generic parts of the Cherkasy file (water,
 // DETAIL, spawn, the world object), port them here by hand.
+// ?phone (phone.js): the centre only – map.json cut to the disc round Piața Unirii before anything is built (the ground
+// workers get the box to keep), the sites that stand outside it skipped and the meshes of the rest that lie outside it
+// dropped, fewer people and cars; the places are resolved from the whole map first, so the maps and the explore quest
+// keep every sight. DETAIL has the phone ladder's levels (phone, minimal).
 import * as THREE from 'three';
 import { loadCityTextures } from '../../kit/textures.js';
 import { createFacadeMaterial } from '../facade.js';
@@ -45,6 +49,7 @@ import CONFIG from './config.js';
 import { ASSETS } from '../../city.js';
 import { t } from '../../i18n.js';
 import { applyFixes } from './fixes.js';
+import { CENTRE, clipToCentre, siteInCentre, outsideMeshes, inDisc } from './phone.js';
 
 const guard = (label, fn, fallback = null) => { try { return fn() ?? fallback; } catch (e) { console.error(`[oradea] ${label} failed`, e); return fallback; } };
 const nextTask = () => new Promise((res) => { const ch = new MessageChannel(); ch.port1.onmessage = () => { ch.port1.close(); res(); }; ch.port2.postMessage(0); });
@@ -70,6 +75,18 @@ const DETAIL = {
     trees: { nearOut: [40, 50], midOut: [150, 175], farOut: [900, 1050], shadow: 60 },
     bld: { detailFar: 1100, detailShadow: 150, facadeShadow: 300 },
     sites: { ratio: 1 / 60, shadow: 200 }, proxy: 250, people: [150, 0.7], traffic: [350, 0.7], water: { on: false }, facade: 2,
+  },
+  // the phone tier (?phone, phone.js): shorter reaches than 'low' everywhere, no shadow maps (shadows.js), and sites
+  // gone past `far` (the haze is ~90 % opaque at 800 m)
+  phone: {
+    trees: { nearOut: [30, 40], midOut: [110, 130], farOut: [520, 620], shadow: 0 },
+    bld: { detailFar: 600, detailShadow: 0, facadeShadow: 0 },
+    sites: { ratio: 1 / 35, shadow: 0, far: 650 }, proxy: 180, people: [110, 0.55], traffic: [260, 0.6], water: { on: false }, facade: 2.5,
+  },
+  minimal: {
+    trees: { nearOut: [25, 32], midOut: [90, 105], farOut: [420, 500], shadow: 0 },
+    bld: { detailFar: 420, detailShadow: 0, facadeShadow: 0 },
+    sites: { ratio: 1 / 25, shadow: 0, far: 480 }, proxy: 140, people: [80, 0.45], traffic: [200, 0.5], water: { on: false }, facade: 3,
   },
 };
 
@@ -127,6 +144,17 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
   stage('load', 0.12, t('Relief și străzi…', 'Terrain and streets…'));
 
   const geo = guard('frame', () => FRAME_OF(map));
+  // the phone tier: places from the whole map, the sites outside the centre left out, then the map cut to the centre
+  const phone = params.has('phone') ? CENTRE : null;
+  let phoneClip = null, phonePlaces = null;
+  if (phone) {
+    const byId = new Map(map.buildings.map((b) => [b.id, b]));
+    phonePlaces = guard('places', () => resolvePlaces(map, geo, [...PLACES, ...handBuilt.flatMap((S) => S.places ?? [])]), []);
+    const out = handBuilt.filter((S) => !siteInCentre(S, byId, geo, phone));
+    for (const S of out) handBuilt.splice(handBuilt.indexOf(S), 1);
+    phoneClip = clipToCentre(map, phone);
+    console.log(`[oradea] phone: the centre (${phone.r} m): ${phoneClip.stats.buildings.join(' -> ')} buildings, ${phoneClip.stats.roads.join(' -> ')} roads; sites left out: ${out.map((S) => S.id).join(', ') || 'none'}`);
+  }
   const dem = new Int16Array(demBuf), hf = createHeightField(map, dem);
   // the narrow river (river.js): banks kept above the water, and the bridges over it on decks the lattice rides
   const banks = guard('banks', () => liftBanks(hf, dem, map.dem), 0);
@@ -145,7 +173,7 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
   let groundDone = false, bldF = 0;
   const report = () => onProgress?.(0.15 + 0.55 * (0.3 * (groundDone ? 1 : 0) + 0.7 * bldF),
     `${t('Relief, străzi, clădiri…', 'Terrain, streets, buildings…')} ${Math.round(100 * (0.3 * (groundDone ? 1 : 0) + 0.7 * bldF))}%`);
-  const groundP = buildGroundAsync({ scene: root, T, map, hf, strip: null, renderer, mapUrl: `${ASSETS}map.json` }).then((g) => { groundDone = true; report(); return g; });
+  const groundP = buildGroundAsync({ scene: root, T, map, hf, strip: null, renderer, mapUrl: `${ASSETS}map.json`, keep: phoneClip?.keep }).then((g) => { groundDone = true; report(); return g; });
   const bldP = buildCityBuildings({ root, map, hf, solids: collision, zips, skip, facadeMat, detailMat, useWorkers: !params.has('noworkers'),
     onProgress: (f) => { bldF = f; report(); } });
   const base = { root, T, map, solids: collision, zips, heightAt: hf.heightAt, ground: null, geo, facadeMat, detailMat, railLevel: null, bridges, skip };
@@ -173,6 +201,12 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
   const B = Bld.B;
   const notSite = new Set([...before, ground.root, ...Bld.meshes]);
   const siteRoots = root.children.filter((o) => !notSite.has(o));
+  if (phone) { // a multi-place site's meshes outside the centre (a whole kit church, a far wing): off the scene, off the GPU
+    root.updateMatrixWorld(true);
+    const far = outsideMeshes(siteRoots, phone);
+    for (const o of far) { o.removeFromParent(); o.visible = false; o.geometry?.dispose(); }
+    if (far.length) console.log(`[oradea] phone: ${far.length} site meshes outside the centre dropped`);
+  }
   const farCull = createFarCull(siteRoots);
   let proxies = null;
   for (const s of sites) if (s.footprints) B.footprints.push(...s.footprints);
@@ -189,8 +223,9 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
   const ponds = buildPonds({ scene: root, map, heightAt });
 
   const occ = footprintRaster(B.footprints, map.region);
-  const spots = treeSpots({ map, ground, footprints: B.footprints, occ, clear: sites.filter((s) => s.clear).map((s) => s.clear),
+  let spots = treeSpots({ map, ground, footprints: B.footprints, occ, clear: sites.filter((s) => s.clear).map((s) => s.clear),
     extra: sites.flatMap((s) => s.spots ?? []), sparse: null, real: canopyAt(canopyBuf) });
+  if (phone) spots = Object.assign(spots.filter((s) => inDisc(s.x, s.z, phone, 60)), { stats: { ...spots.stats, phone: spots.length } });
   const trees = buildTrees({ scene: root, T, spots, maxScale: 3.2, heightAt, floorY: hf.data.grid.reduce((m, h) => Math.min(m, h), Infinity) - 5 });
   const trunks = new Map();
   trees.addSolids((c) => { trunks.set(c.item, collision.cyl(c.x, c.z, c.y0, c.y1, c.r, c.r, 'tree')); });
@@ -202,12 +237,12 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
   if (!params.has('notraffic')) {
     const decks = sites.filter((s) => s.deckAt);
     const deckAt = (x, z) => { for (const s of decks) { const y = s.deckAt(x, z); if (y != null) return y; } return null; };
-    try { traffic = await buildCherkasyTraffic({ scene: root, map, ground, deckAt }); } catch (e) { console.error('[oradea] traffic failed', e); }
+    try { traffic = await buildCherkasyTraffic({ scene: root, map, ground, deckAt, ...(phone ? { density: 0.35 } : {}) }); } catch (e) { console.error('[oradea] traffic failed', e); }
   }
   stage('traffic', 0.9, t('Oameni…', 'People…'));
   if (!params.has('nopeds')) {
     people = guard('people', () => createPeople({ scene: root, map, ground: { heightAt, onAsphalt: ground.onAsphalt, isWater: ground.isWater, isBuilding: (x, z) => occ.get(x, z) === 1 },
-      buildings: map.buildings, traffic, gibs: debris }));
+      buildings: map.buildings, traffic, gibs: debris, opts: phone ? { maxWalkers: 360, density: 0.6, radius: 170 } : {} }));
   }
   if (traffic) {
     traffic.attachSolids(collision, collision.groundHeight);
@@ -270,10 +305,11 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
     getMapFeatures: () => mapFeatures(map, B),
     places: guard('places', () => {
       const partners = Object.assign({}, ...sites.map((x) => x.partners));
-      return resolvePlaces(map, geo, [...PLACES, ...handBuilt.flatMap((S) => S.places ?? [])]).map((q) => Object.assign(q, partners[q.id]));
+      return (phonePlaces ?? resolvePlaces(map, geo, [...PLACES, ...handBuilt.flatMap((S) => S.places ?? [])])).map((q) => Object.assign(q, partners[q.id]));
     }, []),
     textures: T, materials: { facade: facadeMat, detail: detailMat, ground: ground.root.children[0]?.material ?? null },
     cherkasy: { map, ground, hf, B, sites, landmarks: {}, carParks, setCam: (c) => { forced = c; } },
+    phone, // the phone tier's disc { x, z, r } (phonegame.js keeps the car in it) or null
     update(dt, camera) {
       water.update(dt, camera); wet.update?.(dt); ponds.update?.(dt);
       if (!camera) return;
@@ -289,7 +325,7 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
     },
     setQuality(q) {
       const D = DETAIL[q] || DETAIL.high;
-      trees.setDetail(D.trees); Bld.setDetail(D.bld); farCull.set(D.sites); proxies?.set(D.proxy); facadeMat.setDetail(D.facade);
+      trees.setDetail(D.trees); Bld.setDetail(D.bld); farCull.set(D.sites); proxies?.set(D.proxy, D.sites.far); facadeMat.setDetail(D.facade);
       people?.setDrawDistance(...D.people); traffic?.sim?.setDrawDistance(...D.traffic);
       water.setReflection(D.water.on, D.water);
     },

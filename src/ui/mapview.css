@@ -22,6 +22,9 @@
   font: 600 13px system-ui, sans-serif; color: #fff; padding: 8px 14px; border-radius: 999px; cursor: pointer;
   background: rgba(12, 17, 28, .86); border: 1px solid rgba(255, 255, 255, .22); box-shadow: 0 4px 14px rgba(0, 0, 0, .4); }
 .mapview.folded .mv-pill { display: block; }
+/* the phone beta (a city with a phone tier: mapview.js) */
+.mv-play { display: block; font: 700 16px system-ui, sans-serif; padding: 13px; border-radius: 10px; text-decoration: none; color: #0b1a10; background: #6ee08a; }
+.mv-pill.mv-pill-play { top: 58px; text-decoration: none; background: #2f9e55; border-color: transparent; }
 
 /* the map's chrome on a narrow screen */
 @media (max-width: 700px) {

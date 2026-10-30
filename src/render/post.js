@@ -4,7 +4,9 @@
 //   createPostProcessing({ renderer, scene, camera, quality = 'high', daylight? }) -> post
 //     post.render(dt)            draw one frame (resets renderer.info first, so stats cover the whole frame)
 //     post.setSize(w, h)         CSS pixels; zero or hidden sizes are ignored until a real size arrives
-//     post.setQuality('low' | 'medium' | 'high')   AO on / resolution / glass-aware, AA kind, render scale; resets adaptive
+//     post.setQuality('low' | 'medium' | 'high' | 'phone' | 'minimal')   AO on / resolution / glass-aware, AA kind, render scale;
+//                                resets adaptive. The phone levels (world/oradea/phone.js) drop the bloom: one tone-mapping
+//                                pass instead of bloom + tone mapping
 //     post.setAdaptive(f)        render at baseDpr * f (0.25..1, floored at 1 device px per CSS px unless the quality's
 //                                own base is lower); CSS size unchanged; post.adaptive, post.baseDpr (min(devicePixelRatio,
 //                                maxDpr) * scale), post.pixelRatio (effective). Driven by render/adaptive.js
@@ -34,6 +36,9 @@ const QUALITY = {
   low: { ao: false, aoHalf: true, aoGlass: false, aa: 'fxaa', scale: 0.75, maxDpr: 1 },
   medium: { ao: true, aoHalf: true, aoGlass: false, aa: 'smaa', smaa: SMAAPreset.MEDIUM, scale: 1, maxDpr: 1.25 },
   high: { ao: true, aoHalf: false, aoGlass: true, aa: 'smaa', smaa: SMAAPreset.HIGH, scale: 1, maxDpr: 1.6 },
+  // the phone tier (?phone): no AO, no bloom, FXAA or no AA, at most 1.25 / 1 device px per CSS px
+  phone: { ao: false, aoHalf: true, aoGlass: false, aa: 'fxaa', bloom: false, scale: 1, maxDpr: 1.25 },
+  minimal: { ao: false, aoHalf: true, aoGlass: false, aa: null, bloom: false, scale: 1, maxDpr: 1 },
 };
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
@@ -78,10 +83,11 @@ export function createPostProcessing({ renderer, scene, camera, quality = 'high'
   const bloom = new BloomEffect({ luminanceThreshold: 2.2, luminanceSmoothing: 0.4, intensity: 0.35, mipmapBlur: true, radius: 0.62, levels: 7 });
   const tone = new ToneMappingEffect({ mode: ToneMappingMode.NEUTRAL }); // Khronos PBR Neutral: keeps contrast and hue (AgX read flat)
   const gradePass = new EffectPass(camera, bloom, tone);
+  const tonePass = new EffectPass(camera, new ToneMappingEffect({ mode: ToneMappingMode.NEUTRAL })); // levels without bloom
   const smaa = new SMAAEffect({ preset: SMAAPreset.HIGH, edgeDetectionMode: EdgeDetectionMode.COLOR });
   const smaaPass = new EffectPass(camera, smaa);
   const fxaaPass = new EffectPass(camera, new FXAAEffect());
-  const chain = [renderPass, ao, gradePass, smaaPass, fxaaPass];
+  const chain = [renderPass, ao, gradePass, tonePass, smaaPass, fxaaPass];
   for (const p of chain) composer.addPass(p);
 
   const fx = { ao: true, bloom: true, aa: true };
@@ -91,6 +97,7 @@ export function createPostProcessing({ renderer, scene, camera, quality = 'high'
   // exactly one pass writes to the screen: the last enabled one
   function relink() {
     ao.enabled = fx.ao && Q.ao;
+    gradePass.enabled = Q.bloom !== false; tonePass.enabled = !gradePass.enabled; // bloom's blur chain runs even at opacity 0
     bloom.blendMode.opacity.value = fx.bloom ? 1 : 0;
     smaaPass.enabled = fx.aa && Q.aa === 'smaa';
     fxaaPass.enabled = fx.aa && Q.aa === 'fxaa';
@@ -165,7 +172,7 @@ export function createPostProcessing({ renderer, scene, camera, quality = 'high'
       if (intensity !== undefined) ao.configuration.intensity = clamp(intensity, 0, 6);
     },
     resetHistory() { if (ao.configuration.accumulate) ao.configuration.accumulate = false; },
-    passes: { renderPass, ao, gradePass, smaaPass, fxaaPass, bloom, tone, smaa },
+    passes: { renderPass, ao, gradePass, tonePass, smaaPass, fxaaPass, bloom, tone, smaa },
     dispose() { composer.dispose(); },
   };
 }

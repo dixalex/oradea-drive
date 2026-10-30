@@ -30,6 +30,7 @@ import { vehicleAtlas } from './vehicles.js';
 import { PEEK } from './peek.js';
 import { SECRETE } from './quests.js';
 import { t } from '../../i18n.js';
+import { LEVELS as PHONE_LEVELS, START as PHONE_START } from './phone.js';
 
 export default {
   id: 'oradea',
@@ -81,4 +82,5 @@ export default {
   vehicleAtlas,
   radio: 'assets/oradea/radio/',
   voices: false,
+  phone: { levels: PHONE_LEVELS, start: PHONE_START, play: t('Joacă (beta)', 'Play (beta)') },
 };

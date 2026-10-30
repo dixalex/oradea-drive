@@ -16,7 +16,7 @@
 // for GRACE s after start or a quality change (shader compiles, tile uploads). An ignored pill hides after SHOW_S and
 // comes back no sooner than the cooldown, which doubles each time.
 const WINDOW = 2, SLOW_FPS = 40, SLOW_RUN = 3, GRACE = 10, SHOW_S = 12, COOLDOWN = 90, GAP = 0.5;
-const NAMES = { low: 'низька', medium: 'середня', high: 'висока' };
+const NAMES = { low: 'низька', medium: 'середня', high: 'висока', phone: 'телефон', minimal: 'мінімальна' }; // the last two: a city's phone tier
 
 export function createPerfHint({ container, getQuality, setQuality, levels = ['low', 'medium', 'high'], canAdapt = () => false }) {
   const doc = container.ownerDocument;

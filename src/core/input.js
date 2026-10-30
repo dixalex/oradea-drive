@@ -13,6 +13,10 @@
 //     input.locked, input.lock(), input.unlock(), input.gamepadId, input.dispose()
 //     input.dragLook = true: a click on the element no longer captures the pointer; the mouse looks while a button held
 //                             down on the element drags (the photo mode: its toolbar needs a free cursor)
+//     input.touch             on-screen controls (ui/touch.js): hold(action) / release(action) – an action held like a key
+//                             (every action also answers to the code '@action'); stick(x, y) – an analog stick, x steers
+//                             (move.x), y pitches in the air (pitch, not the road throttle; +1 = nose down); look(dx, dy)
+//                             – a finger drag, in mouse pixels; clear() lets go of everything
 // Keys typed into form fields are ignored. Focus loss or a hidden tab releases everything (no stuck keys).
 
 export const DEFAULT_BINDINGS = {
@@ -48,6 +52,7 @@ export function createInput({ target = globalThis.window, element = null, lockOn
   const hitCodes = new Set();          // codes that went down since the last latch
   const upCodes = new Set();           // codes that went up since the last latch
   let mdx = 0, mdy = 0, wheelAcc = 0;
+  const stick = { x: 0, y: 0 };        // the on-screen stick (input.touch), -1..1
   let locked = false, padId = null, dragLook = false, dragging = false;
   const padPrev = new Map();           // action -> held last frame (gamepad)
 
@@ -60,7 +65,7 @@ export function createInput({ target = globalThis.window, element = null, lockOn
 
   function rebuild() {
     codeToActions.clear();
-    for (const [a, codes] of Object.entries(binds)) for (const c of codes) {
+    for (const [a, codes] of Object.entries(binds)) for (const c of [...codes, '@' + a]) { // '@a': the on-screen button
       if (!codeToActions.has(c)) codeToActions.set(c, []);
       codeToActions.get(c).push(a);
     }
@@ -72,7 +77,7 @@ export function createInput({ target = globalThis.window, element = null, lockOn
   // ------------------------------------------------------------------ DOM listeners
   const press = (code) => { if (!down.has(code)) { down.add(code); hitCodes.add(code); } };
   const lift = (code) => { if (down.delete(code)) upCodes.add(code); };
-  const releaseAll = () => { for (const c of down) upCodes.add(c); down.clear(); dragging = false; };
+  const releaseAll = () => { for (const c of down) upCodes.add(c); down.clear(); dragging = false; stick.x = stick.y = 0; };
 
   function onKeyDown(e) {
     if (isTyping(e.target)) return;
@@ -146,8 +151,8 @@ export function createInput({ target = globalThis.window, element = null, lockOn
 
     const k = (a) => (heldA.has(a) || pressedA.has(a) ? 1 : 0);
     frame.throttle = clamp1(k('gas') - k('brake') + trig);
-    frame.pitch = clamp1(k('noseDown') - k('noseUp') + py);
-    frame.move.x = clamp1(k('right') - k('left') + px);
+    frame.pitch = clamp1(k('noseDown') - k('noseUp') + py + stick.y);
+    frame.move.x = clamp1(k('right') - k('left') + px + stick.x);
     frame.move.y = clamp1(frame.throttle + k('noseDown') - k('noseUp') + py);
     frame.look.dx = mdx + lx * PAD_LOOK * dt;
     frame.look.dy = mdy + ly * PAD_LOOK * dt;
@@ -183,6 +188,12 @@ export function createInput({ target = globalThis.window, element = null, lockOn
     lock, unlock,
     get dragLook() { return dragLook; },
     set dragLook(v) { dragLook = !!v; dragging = false; },
+    touch: {
+      hold: (a) => press('@' + a), release: (a) => lift('@' + a),
+      stick(x, y) { stick.x = clamp1(+x || 0); stick.y = clamp1(+y || 0); },
+      look(dx, dy) { mdx += dx; mdy += dy; },
+      clear() { for (const c of down) if (c[0] === '@') lift(c); stick.x = stick.y = 0; },
+    },
     // test / automation hooks: synthesize key and mouse input without DOM events
     inject: { down: press, up: lift, mouse(dx, dy) { mdx += dx; mdy += dy; } },
     dispose() { for (const [t, type, fn, opt] of listen) t.removeEventListener(type, fn, opt); releaseAll(); unlock(); },

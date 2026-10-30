@@ -11,8 +11,9 @@
 //       the moving ones, and those whose silhouette is the point at any distance – KEEP: the landmarks' towers and
 //       domes, the churches, the monuments, the drama theatre, the New Year tree, the park under Zamkova hora); places: world.places (rings + ringIds); skip: the OSM ids the sites replace (an OSM
 //       ring a site only decorates keeps its city building, so it gets no box)
-//     proxies.set(near)     metres; Infinity (the default, 'high') = every site draws itself. The first finite call
-//                           starts the boxes, built ~4 ms a frame by update(); the sites draw themselves meanwhile.
+//     proxies.set(near, far = Infinity)   metres; near Infinity (the default, 'high') = every site draws itself. The first
+//                           finite call starts the boxes, built ~4 ms a frame by update(); the sites draw themselves
+//                           meanwhile. Boxes past `far` are not drawn either (the phone tier, under its haze).
 //     proxies.update(camPos)   builds on, then re-checks after the camera moved 4 m
 //     proxies.flush()       finishes the build at once (tests, scripted checks)
 //     proxies.stats() -> { sites, boxes, near, swapped, meshes, ms (the build), worst: [ms, step] (its longest slice) }; proxies.names() -> the swapped sites' root names
@@ -23,7 +24,7 @@ import { mergeGeometries } from '../../kit/batch.js';
 const WIDE = 400, CELL = 512, HYST = 1.15, KEEP = /^(landmark-|balloon|plane|yacht|yalynka$|zamkovapark$|andriy$|lotus$|kobzar$|drama$)/, STUCCO = 0.55;
 
 export function createSiteProxies({ parent, roots, places, map, skip, heightAt, facadeMat, detailMat }) {
-  let near = Infinity, built = null, lx = Infinity, ly = 0, lz = 0;
+  let near = Infinity, far = Infinity, built = null, lx = Infinity, ly = 0, lz = 0;
   const box = new THREE.Box3(), tmp = new THREE.Box3(), sph = new THREE.Sphere();
 
   let ms = 0, job = null, worst = [0, ''];
@@ -168,10 +169,11 @@ export function createSiteProxies({ parent, roots, places, map, skip, heightAt, 
       s.real = real;
       if (s.o.visible !== real) s.o.visible = real;
     }
+    const near2 = (m) => far === Infinity || m.geometry.boundingSphere.center.distanceTo(cam) - m.geometry.boundingSphere.radius < far;
     for (const c of built.cells) {
       const merged = on && c.sites.every((s) => !s.real);
-      for (const m of c.meshes) m.visible = merged;
-      for (const s of c.sites) for (const m of s.own) m.visible = on && !merged && !s.real;
+      for (const m of c.meshes) m.visible = merged && near2(m);
+      for (const s of c.sites) for (const m of s.own) m.visible = on && !merged && !s.real && near2(m);
     }
   }
 
@@ -188,8 +190,8 @@ export function createSiteProxies({ parent, roots, places, map, skip, heightAt, 
 
   return {
     flush() { run(Infinity); },
-    set(m = Infinity) {
-      near = m;
+    set(m = Infinity, f = Infinity) {
+      near = m; far = f;
       if (Number.isFinite(near) && !built && !job) job = build();
       lx = Infinity;
     },

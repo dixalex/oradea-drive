@@ -4,6 +4,8 @@
 // the ride itself is on a computer. index.html picks this or main.js (touch-only or a phone UA; ?mobile / ?desktop force either).
 // A second tap on a sight or an improved object opens its hand-built model in 3D over the map (ui/peek3d.js: three.js and
 // the model load only then).
+// A city build with a phone tier (CITY.phone: Oradea) adds a "play (beta)" button to the card and a pill beside "how to
+// play", which open the game in its phone mode (?desktop&phone).
 //   startMapView({ container = document.body }) -> Promise<{ map (bigmap), painter, peek }>
 import './ui/hud.css';
 import './ui/mapview.css';
@@ -51,6 +53,12 @@ export async function startMapView({ container = document.body } = {}) {
   const $ = (q) => ui.querySelector(q);
   const show = (on) => ui.classList.toggle('folded', !on);
   $('.mv-go').onclick = () => show(false);
+  if (CITY?.phone?.play) { // the phone beta: the game itself, on the city centre
+    const href = '?desktop&phone';
+    const play = Object.assign(document.createElement('a'), { className: 'mv-play', href, textContent: `🚗 ${CITY.phone.play}` });
+    $('.mv-row').prepend(play);
+    $('.mv-pill').after(Object.assign(document.createElement('a'), { className: 'mv-pill mv-pill-play', href, textContent: `🚗 ${CITY.phone.play}` }));
+  }
   $('.mv-pill').onclick = () => show(true);
   const share = $('.mv-share'), url = location.origin + location.pathname;
   share.onclick = async () => { // the phone's share sheet (to yourself in a messenger); a copy where there is none

@@ -1,6 +1,7 @@
 // Vite config for the fork's city builds. Without VITE_CITY it is Vite's defaults (the upstream Cherkasy game).
 // With VITE_CITY=oradea:
-//   - index.html gets the Oradea title, description and share card, and no Ukrainian loading text;
+//   - index.html gets the Oradea title, description and share card, and no Ukrainian loading text; ?phone opens the game
+//     (its phone tier) on a phone instead of the map page;
 //   - a small stylesheet turns the bot chip and the big map's bot link into the WhatsApp feedback chat (config.feedback;
 //     bot/ belongs to the Cherkasy game) and hides the other bot links, and an RO / EN switch (src/i18n.js reads the
 //     choice) sits in the top-right corner;
@@ -59,7 +60,9 @@ function oradeaPage() {
         .replace('<div class="title">Черкаси Драйв</div>', '<div class="title">Oradea Drive</div>')
         .replace('<div class="msg">Завантаження…</div>', '<div class="msg">…</div>')
         .replace('<div id="app"></div>', `<div id="app"></div>\n  ${LANG_SWITCH}`)
-        .replace("'Не вдалося запустити гру: '", "(/^ro/i.test(navigator.language) ? 'Jocul nu a pornit: ' : 'The game failed to start: ')");
+        .replace("'Не вдалося запустити гру: '", "(/^ro/i.test(navigator.language) ? 'Jocul nu a pornit: ' : 'The game failed to start: ')")
+        // ?phone (the phone beta, src/world/oradea/phonegame.js) opens the game on a phone too, not the map page
+        .replace('const q = new URLSearchParams(location.search), mm = ', "const q = new URLSearchParams(location.search); if (q.has('phone')) q.set('desktop', ''); const mm = ");
     },
     closeBundle() {
       for (const p of ['assets/cherkasy', 'assets/radio', 'assets/brand/tors.svg', 'assets/brand/urban.svg', 'assets/brand/uspace.svg',

@@ -408,6 +408,8 @@ export const UI = {
   "низька": ["joasă", "low"],
   "середня": ["medie", "medium"],
   "висока": ["înaltă", "high"],
+  "телефон": ["telefon", "phone"],
+  "мінімальна": ["minimă", "minimal"],
   "Графіка:": ["Grafică:", "Graphics:"],
   "Гра гальмує?": ["Jocul se mișcă greu?", "Game running slow?"],
   "– простіша графіка": ["– grafică mai simplă", "– simpler graphics"],

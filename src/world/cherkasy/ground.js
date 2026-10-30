@@ -16,10 +16,12 @@
 //       isWater(x, z), onAsphalt(x, z), shoreDist(x, z) (m to open water, 20 m grid), wetSegs [{ax,az,bx,bz,nx,nz}]
 //       (embankment edges facing the water, n toward it), band { minY, maxY, slope }, stats, update() }
 //   createGroundMaterial(T, strip?) -> MeshStandardMaterial;  GY (layer heights), SURF (surface ids)
-//   buildGroundAsync({ ...buildGround args, mapUrl }) -> Promise<ground>: three module workers (parts 'land' / 'roads' /
-//     'cover', each fetching map.json) build in parallel; falls back to buildGround on any worker failure
-//   buildGroundData({ map, hf, parts }) -> the CPU-only part (tile geometries, markings, rasters, bank segments, water
-//     distance) for the given parts; the worker entry point of this same file calls it
+//   buildGroundAsync({ ...buildGround args, mapUrl, keep? }) -> Promise<ground>: three module workers (parts 'land' / 'roads' /
+//     'cover', each fetching map.json) build in parallel; falls back to buildGround on any worker failure. With keep each
+//     worker is posted its part of the caller's map (already cut down) instead of parsing the whole map.json
+//   buildGroundData({ map, hf, parts, keep? }) -> the CPU-only part (tile geometries, markings, rasters, bank segments, water
+//     distance) for the given parts; the worker entry point of this same file calls it. keep { x0, x1, z0, z1 }: only the
+//     surfaces that reach into this box are built and it stands in for map.region (the phone tier's centre, Oradea)
 import * as THREE from 'three';
 import { WATER_Y } from '../water.js';
 import { CITY } from '../../city.js';
@@ -278,8 +280,9 @@ function clipHalf(P, axis, v, sign) {
 }
 
 // the CPU part (no materials, no scene): tile geometries, markings, rasters, bank segments, water distance
-export function buildGroundData({ map, hf, parts = ['land', 'roads', 'cover'] }) {
+export function buildGroundData({ map, hf, parts = ['land', 'roads', 'cover'], keep = null }) {
   const t0 = performance.now();
+  if (keep) map = keepBox(map, keep);
   // the lattice alone (hf.latticeAt when a site overlays heightAt, railcut.js): the same field the workers build from
   const R = map.region, H = hf.latticeAt ?? hf.heightAt, TILE = 1024;
   const tiles = new Map();
@@ -419,6 +422,17 @@ export function buildGroundData({ map, hf, parts = ['land', 'roads', 'cover'] })
     stats: { ms: Math.round(performance.now() - t0), meshes: tileGeos.length, tris: nTri, kerbs: nKerb, bankSegs: wetSegs.length } };
 }
 
+// the map's surfaces that reach into box B, with B as its region (the water is kept whole: the rasters need it)
+function keepBox(map, B) {
+  const hits = (r) => { // the outer ring's box meets B
+    const F = r[0]; let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+    for (let i = 0; i < F.length; i += 2) { x0 = Math.min(x0, F[i]); x1 = Math.max(x1, F[i]); z0 = Math.min(z0, F[i + 1]); z1 = Math.max(z1, F[i + 1]); }
+    return x1 >= B.x0 && x0 <= B.x1 && z1 >= B.z0 && z0 <= B.z1;
+  };
+  const cover = Object.fromEntries(Object.entries(map.cover ?? {}).map(([k, v]) => [k, v.filter(hits)]));
+  return { ...map, region: { ...B }, land: map.land.filter(hits), asphalt: map.asphalt.filter(hits), walks: map.walks.filter(hits), dirt: (map.dirt ?? []).filter(hits), cover };
+}
+
 // distance to open water on a 20 m grid (two-pass chamfer): the river mirror is skipped deep inland
 function waterDistance(wat) {
   const DC = 20, dnx = Math.ceil(wat.nx * wat.c / DC), dnz = Math.ceil(wat.nz * wat.c / DC);
@@ -495,15 +509,17 @@ export function buildGround({ scene, T, map, hf, strip = null, renderer = null }
 
 // The same in a module worker (it fetches map.json itself) while the main thread builds other things; falls back to
 // the synchronous build when workers are unavailable or fail.
-export async function buildGroundAsync({ scene, T, map, hf, strip = null, renderer = null, mapUrl }) {
+const PART_KEYS = { land: ['land', 'water'], roads: ['asphalt', 'roads', 'junctions'], cover: ['cover', 'dirt', 'walks'] };
+export async function buildGroundAsync({ scene, T, map, hf, strip = null, renderer = null, mapUrl, keep = null }) {
   let data = null;
+  const slice = (parts) => (keep ? Object.fromEntries(['region', 'landExtent', ...parts.flatMap((p) => PART_KEYS[p])].map((k) => [k, map[k]])) : null);
   if (typeof Worker !== 'undefined' && mapUrl) {
     try {
       const run = (parts) => new Promise((res, rej) => {
         const w = new Worker(new URL('./ground.js', import.meta.url), { type: 'module' });
         w.onmessage = (e) => { w.terminate(); if (e.data.error) rej(new Error(e.data.error)); else res(e.data); };
         w.onerror = (e) => { w.terminate(); rej(e.error || new Error(e.message || 'ground worker error')); };
-        w.postMessage({ mapUrl, hf: hf.data, parts });
+        w.postMessage({ mapUrl, map: slice(parts), hf: hf.data, parts, keep });
       });
       const parts = await Promise.all([['land'], ['roads'], ['cover']].map(run));
       for (const d of parts) {
@@ -515,14 +531,14 @@ export async function buildGroundAsync({ scene, T, map, hf, strip = null, render
       data.stats.workers = parts.map((d) => d.stats);
     } catch (e) { console.warn('[ground] workers failed, building on the main thread', e); data = null; }
   }
-  return assemble(data ?? combine([buildGroundData({ map, hf })]), { scene, T, hf, strip, renderer });
+  return assemble(data ?? combine([buildGroundData({ map, hf, keep })]), { scene, T, hf, strip, renderer });
 }
 if (inWorker()) {
   self.onmessage = async (e) => {
     try {
-      const tf = performance.now(), map = await fetch(e.data.mapUrl).then((r) => r.json());
+      const tf = performance.now(), map = e.data.map ?? await fetch(e.data.mapUrl).then((r) => r.json());
       const tb = performance.now();
-      const d = buildGroundData({ map, hf: heightFieldFrom(e.data.hf), parts: e.data.parts });
+      const d = buildGroundData({ map, hf: heightFieldFrom(e.data.hf), parts: e.data.parts, keep: e.data.keep ?? null });
       const transfer = [];
       const out = { ...d, tileGeos: d.tileGeos.map(({ key, geo }) => ({ key, geo: packGeometry(geo, transfer) })), markings: packGeometry(d.markings, transfer) };
       for (const k of ['asph', 'wat', 'land']) if (d[k]) { out[k] = { ...d[k] }; transfer.push(d[k].bits.buffer); }

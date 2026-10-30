@@ -6,7 +6,9 @@
 //                                               camera's height above ground, schedule the atlas redraw
 //     shadows.light              the THREE SunLight (the only shadow-casting light; add no other shadowed sun light)
 //     shadows.sunDirection       world unit vector toward the active light (sun by day, moon by night)
-//     shadows.setQuality('low' | 'medium' | 'high'), shadows.setReachLimit(m), shadows.invalidate()
+//     shadows.setQuality('low' | 'medium' | 'high' | 'phone' | 'minimal'), shadows.setReachLimit(m), shadows.invalidate()
+//       (the phone levels cast none: SunLight's cascade count is fixed at two, and two cascades doubled a phone frame's
+//       draw calls; world/oradea/phonegame.js puts a blob under the car instead)
 //     shadows.stats { reach, mapSize, redraws }, shadows.dispose()
 //
 // Reach (the far end of the second cascade) grows with altitude: ~250 m at street level keeps the first cascade a few
@@ -21,6 +23,9 @@ const QUALITY = {
   low: { mapSize: 1024, maxReach: 900, radius: 1.2, every: 2 },
   medium: { mapSize: 2048, maxReach: 1700, radius: 1.8, every: 1 },
   high: { mapSize: 2048, maxReach: 2800, radius: 2.2, every: 1 },
+  // the phone tier (?phone, world/oradea/phone.js)
+  phone: { mapSize: 512, maxReach: 160, radius: 1, every: 2, off: true },
+  minimal: { mapSize: 512, maxReach: 160, radius: 1, every: 2, off: true },
 };
 const REACH_STEP = 1.3;
 
@@ -43,6 +48,7 @@ export function createShadows({ scene, renderer, daylight, quality = 'high' } = 
       sh.map?.dispose(); sh.map = null;      // reallocated at the new size on the next shadow pass
     }
     sh.radius = Q.radius;
+    if (light.castShadow === !!Q.off) light.castShadow = !Q.off; // a change recompiles the lit materials: only when it changes
     reach = 0;                                // force a re-pick
     renderer.shadowMap.needsUpdate = true;
   }

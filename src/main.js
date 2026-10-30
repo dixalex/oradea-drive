@@ -23,6 +23,8 @@
 //     and on page hide, and the next start spawns there; ?fresh ignores it and starts at the default spawn;
 //     ?at=lat,lon[&road=street] (the Telegram bot's "look in the game" links) starts on the road beside that point.
 //     The game runs the adaptive resolution (ctx.adaptive; ?noadapt turns it off); the perf pill waits for its floor.
+//     ?phone in a city build with a phone tier (CITY.phone: Oradea, world/oradea/phonegame.js, loaded only then): the
+//     phone ladder in QUALITY_LEVELS, its own saved level, the start level from the reload guard, touch controls.
 //   World contract (legacy Cherkasy shape, see src/game/testworld.js for a complete small example): raycast(o, d, max),
 //     groundHeight(x, z, yHint), surfaceAt, collision, spawn / spawnYaw, carSpawn / carSpawnYaw, streetsAt(x, z), ram(q),
 //     collideDynamic(p, r, h), cherkasy.{ map, ground }, life.{ traffic, crowd }, mapFeatures | getMapFeatures(),
@@ -58,10 +60,13 @@ import './ui/photomode.css'; // here, not in photomode.js: node tests import the
 import { createGameAudio } from './audio/game.js';
 import { showConsent } from './ui/consent.js';
 import { track } from './analytics.js';
+import { CITY as CITY_CFG } from './city.js';
 
-// graphics levels: each render module has its table (post, shadows, sky), the world its DETAIL (city.js world.setQuality)
-export const QUALITY_LEVELS = ['low', 'medium', 'high'];
-const QUALITY_KEY = 'cd.quality';
+// graphics levels: each render module has its table (post, shadows, sky), the world its DETAIL (city.js world.setQuality);
+// the phone tier (?phone) has its own ladder and saved level
+const PHONE = !!CITY_CFG?.phone && new URLSearchParams(globalThis.location?.search || '').has('phone');
+export const QUALITY_LEVELS = PHONE ? CITY_CFG.phone.levels : ['low', 'medium', 'high'];
+const QUALITY_KEY = PHONE ? 'cd.quality.phone' : 'cd.quality';
 const TIME_CYCLE = ['morning', 'day', 'sunset']; // T: morning, midday, evening
 const POS_KEY = 'cherkasy.pos', POS_EVERY = 10; // saved car spot: { x, y, z, yaw }
 
@@ -69,7 +74,7 @@ function savedQuality() {
   try { const q = localStorage.getItem(QUALITY_KEY); return QUALITY_LEVELS.includes(q) ? q : null; } catch { return null; }
 }
 
-export function createCore({ container = document.body, quality = savedQuality() || 'high', preset = 'day', far = 24000, adaptive = false } = {}) {
+export function createCore({ container = document.body, quality = savedQuality() || (PHONE ? CITY_CFG.phone.start : 'high'), preset = 'day', far = 24000, adaptive = false } = {}) {
   const renderer = createRenderer({ container });
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(62, 1, 0.3, far);
@@ -184,7 +189,7 @@ export function createCore({ container = document.body, quality = savedQuality()
   input.bind('quality', ['F9']);
   ctx.addSystem(() => {
     if (input.pressed('timeOfDay')) ctx.cycleTime(3);
-    if (input.pressed('quality')) ctx.setQuality(QUALITY_LEVELS[(QUALITY_LEVELS.indexOf(ctx.quality) + 1) % 3]);
+    if (input.pressed('quality')) ctx.setQuality(QUALITY_LEVELS[(QUALITY_LEVELS.indexOf(ctx.quality) + 1) % QUALITY_LEVELS.length]);
   }, 'renderKeys');
   return ctx;
 }
@@ -197,6 +202,7 @@ function setOverlay(overlay, text) {
 // the city (src/world/cherkasy/city.js, or src/world/oradea/city.js with VITE_CITY=oradea – src/city.js) when it is
 // present in the build; else null -> the test world. The branch is static, so the other city stays out of the bundle.
 const CITY = import.meta.env.VITE_CITY === 'oradea' ? import.meta.glob('./world/oradea/city.js') : import.meta.glob('./world/cherkasy/city.js');
+const PHONE_GAME = import.meta.env.VITE_CITY === 'oradea' ? import.meta.glob('./world/oradea/phonegame.js') : {}; // the phone tier's screen
 async function loadCity(opts) {
   const load = Object.values(CITY)[0];
   if (!load) return null;
@@ -211,7 +217,11 @@ export async function startGame({ container = document.getElementById('app') || 
   setOverlay(overlay, 'Готуємо рендер…');
   const consent = showConsent({ overlay }); // the keys and terms, read while the city loads
   const params = new URLSearchParams(globalThis.location?.search || '');
-  const ctx = createCore({ container, adaptive: !params.has('noadapt') });
+  // the phone tier: its module, and the start level from its reload guard (a tab that died soon after its last start
+  // starts one level lower)
+  const phone = PHONE ? await Object.values(PHONE_GAME)[0]?.().catch((e) => { console.error('[main] phone tier failed', e); return null; }) : null;
+  const guard = phone?.bootGuard({ levels: QUALITY_LEVELS, saved: savedQuality() }) ?? null;
+  const ctx = createCore({ container, adaptive: !params.has('noadapt'), quality: guard?.level });
   const { scene, camera, input, renderer } = ctx;
 
   // world: the city, or (?testworld, or no city in the build) the flat test world
@@ -354,6 +364,8 @@ export async function startGame({ container = document.getElementById('app') || 
     ctx.paused = hold || photo.previewing; // Esc inside the map (or the book) closes it too; the game resumes on the next frame
   }, 'hud', { always: true });
   ctx.addSystem((dt) => photo.update(dt), 'photo', { always: true }); // P, the free camera, the shot
+
+  phone?.startPhone(ctx, { guard, ready: consent.accepted }); // touch controls, the centre's edge, the small-screen HUD
 
   setOverlay(overlay, 'Компілюємо шейдери…');
   ctx.sky.update(0, camera);

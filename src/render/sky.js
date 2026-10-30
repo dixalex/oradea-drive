@@ -5,7 +5,8 @@
 //                                 (at once after a sun jump of 6+ deg, a weather change or refreshEnvironment(); the
 //                                 running clock's drift and the clouds' motion only every 2 min)
 //     sky.refreshEnvironment()    force a new environment map on the next update
-//     sky.setQuality('low' | 'medium' | 'high'), sky.setCloudCover(0..1), sky.setHaze({ start, density })
+//     sky.setQuality('low' | 'medium' | 'high' | 'phone' | 'minimal'), sky.setCloudCover(0..1), sky.setHaze({ start, density })
+//       (the phone levels also set a haze floor: ~90 % opaque at 800 / 650 m on the street)
 //     sky.mesh, sky.material, sky.fog (Haze), sky.envMap (current PMREM texture), sky.stats { envRefreshes, envMs }
 //     sky.dispose()
 //   Haze (extends THREE.Fog) – scene.fog replacement. near = clear radius around the eye (m), far = extinction per metre
@@ -215,6 +216,9 @@ const Q = {
   low: { octaves: 3, selfShadow: false, envSize: 64 },
   medium: { octaves: 4, selfShadow: true, envSize: 128 },
   high: { octaves: 5, selfShadow: true, envSize: 128 },
+  // the phone tier (?phone, world/oradea/phone.js): haze = the least extinction per metre (Haze.far)
+  phone: { octaves: 2, selfShadow: false, envSize: 32, haze: 0.0035 },
+  minimal: { octaves: 2, selfShadow: false, envSize: 32, haze: 0.0044 },
 };
 
 export function createSky({ scene, renderer, daylight, quality = 'high', cloudCover = 0.35 } = {}) {
@@ -245,7 +249,7 @@ export function createSky({ scene, renderer, daylight, quality = 'high', cloudCo
   scene.add(mesh);
 
   const fog = new Haze(0xbfd0e0, 120, 0.0001);
-  let baseDensity = 0.0001;
+  let baseDensity = 0.0001, hazeMin = 0;
   scene.fog = fog;
 
   // env capture: the same material on a dome at the origin of a private scene
@@ -266,6 +270,7 @@ export function createSky({ scene, renderer, daylight, quality = 'high', cloudCo
     if (c.selfShadow) material.defines.CLOUD_SELF_SHADOW = 1; else delete material.defines.CLOUD_SELF_SHADOW;
     material.needsUpdate = true;
     if (envSize !== c.envSize) { envSize = c.envSize; envDirty = true; }
+    hazeMin = c.haze ?? 0;
   }
   setQuality(quality);
 
@@ -306,7 +311,7 @@ export function createSky({ scene, renderer, daylight, quality = 'high', cloudCo
     if (camera) mesh.position.copy(camera.position);
     pushUniforms(camera);
     fog.color.copy(S.fogColor);
-    fog.far = baseDensity * (1 + 1.8 * S.overcast);
+    fog.far = Math.max(baseDensity, hazeMin) * (1 + 1.8 * S.overcast);
     scene.environmentIntensity = S.envIntensity;
 
     envClock += dt; envAge += dt;
