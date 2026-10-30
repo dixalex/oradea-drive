@@ -99,7 +99,7 @@ links, his radio songs, the Ukrainian voice lines, the Cherkasy map data and the
 ## Open items
 
 - Phones: `ORADEA-MOBILE.md` (measured memory, phone limits, the plan); `tools/oradea/memory/` measures the load.
-- More landmarks: `tools/oradea/agents/` holds the agent brief and three unstarted cards (reformed churches and synagogues, pentecostal churches, civic landmarks).
+- More landmarks: `tools/oradea/agents/` holds the agent brief and two unstarted cards (reformed churches and synagogues, pentecostal churches). The civic landmarks are built (`sites/civic.js`: Astoria, the palaces of Justice, Finance and the Post, the Prefecture, Lotus Center, Nymphaea, four water towers); Palatul Copiilor, Füchsl, Poynár and Lévay are not.
 
 - The dispatcher and passenger voice lines: record Romanian and English ones (`tools/audio/gen.mjs`, an ElevenLabs key).
 - Radio stations: none publishes terms for third-party players; ask before a public launch (office@radiotransilvania.ro,

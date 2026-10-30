@@ -14,4 +14,6 @@ export const PEEK = {
   premonstratense: site('catholic'), seminargreco: site('catholic'), duhsfant: site('catholic'), mizericordieni: site('catholic'), // sfanaursuline: its front leans on the republicii block, so no peek
   univoradea: site('university'), partiumvechi: site('university'), medicina: site('university'), aranyjanos: site('university'),
   drept: site('university'), constructii: site('university'), agora: site('university'), univemanuel: site('university'),
+  astoria: site('civic'), palatuljustitiei: site('civic'), prefectura: site('civic'), palatulposta: site('civic'), palatulfinantelor: site('civic'),
+  lotuscenter: site('civic'), nymphaea: site('civic'), // the water towers are too small for a peek
 };
