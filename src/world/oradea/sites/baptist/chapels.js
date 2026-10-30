@@ -4,7 +4,8 @@
 //   rogeriusz   Biserica Baptistă Rogériusz (way 436834235): a 27.6 x 21.8 m hall under a low blue-grey gable roof, porch on the tram-line side;
 //   conventia   the Hungarian Baptist convention's chapel (way 544503067): a low 17.6 x 7 m gabled hall among the trees;
 //   rogerius    Biserica Baptistă on the Rogerius side (way 883258099): a flat-roofed central hall in a brown tiled skirt, stepped gable fronts;
-//   nord        Biserica Baptistă in the north (node 2000492192, building 3000010737): a ten-sided hall under a red tiled pyramid roof with a lantern;
+//   nord        the church in the north (node 2000492192, building 3000010737; OSM tags it Baptist, but its lettering on Street View reads
+//               «Biserica Penticostală Speranța», Calea Bihorului 53): a ten-sided hall under a red tiled pyramid roof with a lantern;
 //   betlehem    Betlehem Hungarian Baptist church (node 13476045110, house 422590402): a small gabled house church.
 //   buildChapel(def, { g, S }) -> { B: { wall, roof, det }, res: { footprints, clear(x, z), stats } }; CHAPELS lists the defs, CHAPEL_SKIP their ids
 // Each church is its own three meshes (wall plaster, roof tile, details), so a far church is frustum-culled alone.
@@ -21,7 +22,7 @@ export const CHAPELS = [
   { slug: 'rogeriusz', id: 436834235, name: 'Biserica Baptistă Rogériusz', kind: 'hall', ring: [[-2536.2, -1550.2], [-2508.7, -1550.1], [-2508.8, -1528.4], [-2536.3, -1528.5]], eave: 7.4, ridge: 9.8, wall: '#e3dccd', roof: '#6f7e8a', bays: 6, win: [1.6, 5.4, 1.5], porch: { side: 'W', w: 6, d: 3.2 }, cross: true },
   { slug: 'conventia', id: 544503067, name: 'Convenția Bisericilor Creștine Baptiste Maghiare', kind: 'hall', ring: [[788.9, -565.6], [790.8, -558.9], [773.9, -554], [772, -560.8]], eave: 3.3, ridge: 5.9, wall: '#d9cdb5', roof: '#7c4a3a', bays: 4, win: [1.0, 2.7, 1.1], porch: { side: 'S', w: 3.2, d: 1.8 }, cross: true },
   { slug: 'rogerius', id: 883258099, name: 'Biserica Baptistă', kind: 'tiered', ring: B883 },
-  { slug: 'nord', id: 3000010737, name: 'Biserica Baptistă', kind: 'pyramid', ring: N200 },
+  { slug: 'nord', id: 3000010737, name: 'Biserica Penticostală Speranța', kind: 'pyramid', ring: N200 },
   { slug: 'betlehem', id: 422590402, name: 'Biserica Baptistă Betlehem', kind: 'hall', ring: [[1217.9, 494.3], [1228.7, 486.7], [1233.1, 493], [1222.3, 500.6]], eave: 3.5, ridge: 6.3, wall: '#eae1cc', roof: '#a54c36', bays: 3, win: [1.0, 2.7, 1.1], porch: { side: 'E', w: 3, d: 1.6 }, cross: true },
 ];
 export const CHAPEL_SKIP = CHAPELS.map((c) => c.id);

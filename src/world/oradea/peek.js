@@ -13,6 +13,7 @@ export const PEEK = {
   emanuel: site('baptist', true), bbso: site('baptist', true),
   premonstratense: site('catholic'), seminargreco: site('catholic'), duhsfant: site('catholic'), mizericordieni: site('catholic'), // sfanaursuline: its front leans on the republicii block, so no peek
   reformataorasulnou: site('reformed'), reformataolosig: site('reformed'), evanghelica: site('reformed'), sinagogamare: site('reformed'), aachvasrein: site('reformed'),
+  penticostalabetania: site('pentecostal'), penticostalafiladelfia: site('pentecostal'), penticostalabetel: site('pentecostal'), penticostalatabor: site('pentecostal'),
   univoradea: site('university'), partiumvechi: site('university'), medicina: site('university'), aranyjanos: site('university'),
   drept: site('university'), constructii: site('university'), agora: site('university'), univemanuel: site('university'),
   astoria: site('civic'), palatuljustitiei: site('civic'), prefectura: site('civic'), palatulposta: site('civic'), palatulfinantelor: site('civic'),

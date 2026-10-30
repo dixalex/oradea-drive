@@ -134,6 +134,15 @@ export const PLACES = [
     note: t('1890, pe Strada Mihai Viteazul: cărămidă și ocru, două turnuri cu cupole și Tablele Legii pe fronton', '1890, on Strada Mihai Viteazul: brick and ochre, two domed towers and the Tablets of the Law over the gable') },
   { id: 'aachvasrein', kind: 'sight', icon: '🕍', bld: [286245386], name: t('Sinagoga Aachvas Rein · Muzeul Istoriei Evreilor', 'Aachvas Rein Synagogue · Museum of Jewish History'),
     note: t('Sinagogă ortodoxă din 1926, pe Strada Primăriei; din 2018 Muzeul Istoriei Evreilor din Oradea', 'An Orthodox synagogue of 1926 on Strada Primăriei; since 2018 the Museum of Jewish History of Oradea') },
+  // the Pentecostal churches hand-built in sites/pentecostal
+  { id: 'penticostalabetania', kind: 'sight', icon: '⛪', bld: [261607829], name: t('Biserica Penticostală Betania', 'Betania Pentecostal Church'),
+    note: t('Hală mare sub o boltă semicirculară translucidă, pe Strada Doina', 'A big hall under a translucent barrel vault, on Strada Doina') },
+  { id: 'penticostalafiladelfia', kind: 'sight', icon: '⛪', bld: [3000011312], name: t('Biserica Penticostală Filadelfia', 'Filadelfia Pentecostal Church'),
+    note: t('Tencuială teracotă sub țiglă roșie, cu o fereastră ogivală mare deasupra intrării; Str. Ana Ipătescu 11', 'Terracotta stucco under red tile, with a tall pointed window over the entrance; Str. Ana Ipătescu 11') },
+  { id: 'penticostalabetel', kind: 'sight', icon: '⛪', bld: [423100418], name: t('Biserica Penticostală Betel', 'Betel Pentecostal Church'),
+    note: t('Front în trepte cu o cruce, pe Strada Ion Ghica', 'A stepped front with a cross, on Strada Ion Ghica') },
+  { id: 'penticostalatabor', kind: 'sight', icon: '⛪', bld: [421861043], name: t('Biserica Penticostală Tabor', 'Tabor Pentecostal Church'),
+    note: t('Înființată în 1990; o sală pe trei niveluri cu front în trepte, pe Strada Meiului', 'Founded in 1990; a three-storey hall with a stepped front, on Strada Meiului') },
   // the universities hand-built in sites/university
   { id: 'univoradea', kind: 'sight', icon: '🎓', bld: [309251497, 309261868, 309262055, 309251381, 309262730, 309261311], name: t('Universitatea din Oradea – campusul principal', 'University of Oradea – main campus'),
     note: t('Fosta școală de jandarmi, în stil Secession, cu rectoratul și turnul lui rotund', 'The former gendarmerie school in Secession style, with the rectorate and its round tower') },
