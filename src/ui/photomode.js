@@ -27,6 +27,7 @@
 import * as THREE from 'three';
 import { createFlyCamera } from '../core/flycam.js';
 import { track } from '../analytics.js';
+import { CITY } from '../city.js';
 
 const SPEED = 12, CLEARANCE = 0.6, RADIUS = 0.5, Y_MAX = 1500, SWEEP = 48; // m/s (Shift x6, the wheel scales it), m, m, m, steps
 const FOV_MIN = 20, FOV_MAX = 100;
@@ -35,9 +36,11 @@ const BASE = (() => { try { return import.meta.env?.BASE_URL ?? '/'; } catch { r
 
 export const CAMERA_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>';
 
+// the wordmark and the file name (a city build brings its own: CITY.photo)
+const MARK = CITY?.photo ?? { file: 'cherkasy-drive', a: 'driver', b: '.ck.ua', sub: 'CHERKASY DRIVE' };
 const two = (n) => String(n).padStart(2, '0');
 export function photoName(d = new Date()) {
-  return `cherkasy-drive-${d.getFullYear()}${two(d.getMonth() + 1)}${two(d.getDate())}-${two(d.getHours())}${two(d.getMinutes())}${two(d.getSeconds())}.png`;
+  return `${MARK.file}-${d.getFullYear()}${two(d.getMonth() + 1)}${two(d.getDate())}-${two(d.getHours())}${two(d.getMinutes())}${two(d.getSeconds())}.png`;
 }
 
 // sizes scale with the shot: 1 at 1080p (a 4K shot gets a 2x mark, a small window a smaller one, never under 0.45)
@@ -61,17 +64,17 @@ export function drawWatermark(g, w, h, icon = null) {
   g.textBaseline = 'alphabetic'; g.textAlign = 'left';
   // "driver" white, ".ck.ua" in the game's gold
   g.font = `700 ${big}px system-ui, -apple-system, "Segoe UI", sans-serif`;
-  const wA = g.measureText('driver').width, wB = g.measureText('.ck.ua').width;
+  const wA = g.measureText(MARK.a).width, wB = g.measureText(MARK.b).width;
   g.font = `600 ${small}px system-ui, -apple-system, "Segoe UI", sans-serif`;
   if ('letterSpacing' in g) g.letterSpacing = `${(small * 0.22).toFixed(1)}px`;
-  const sub = 'CHERKASY DRIVE', wS = g.measureText(sub).width;
+  const sub = MARK.sub, wS = g.measureText(sub).width;
   const tw = Math.max(wA + wB, wS), x0 = right - tw;
   g.fillStyle = 'rgba(255, 255, 255, .9)';
   g.fillText(sub, right - wS, base2);
   if ('letterSpacing' in g) g.letterSpacing = '0px';
   g.font = `700 ${big}px system-ui, -apple-system, "Segoe UI", sans-serif`;
-  g.fillStyle = '#ffffff'; g.fillText('driver', right - wA - wB, base1);
-  g.fillStyle = '#f2c14e'; g.fillText('.ck.ua', right - wB, base1);
+  g.fillStyle = '#ffffff'; g.fillText(MARK.a, right - wA - wB, base1);
+  g.fillStyle = '#f2c14e'; g.fillText(MARK.b, right - wB, base1);
   if (icon && (icon.naturalWidth || icon.width)) {
     g.shadowBlur = 6 * s;
     g.drawImage(icon, x0 - Math.round(12 * s) - iz, base2 - iz + Math.round(2 * s), iz, iz);

@@ -83,7 +83,7 @@ part of the explore quest. The rebuild cards are in `tools/oradea/agents/`. A ri
 
 `main.js`, `mapview.js`, `audio/engine.js`, `audio/radio.js`, `render/daylight.js`, `npc/lanes.js`, `npc/traffic.js`,
 `npc/vehicles.js`, `kit/logo.js` (`CITY.logoColours`), `ui/botlink.js` (`CITY.feedback`), `ui/hud.js` (`CITY.help`), `ui/consent.js`
-(`CITY.consentNote`, `CITY.source`), `ui/peek3d.js` (`CITY.peek`, the Oradea module folder), `game/quests/index.js`, `world/buildings.js` (the `u` looks: additive
+(`CITY.consentNote`, `CITY.source`), `ui/photomode.js` (`CITY.photo`: the photo's wordmark and file name), `ui/peek3d.js` (`CITY.peek`, the Oradea module folder), `game/quests/index.js`, `world/buildings.js` (the `u` looks: additive
 cases Cherkasy never reaches; `b.old` and the flat tiled roof tint for the old town), `world/cherkasy/{ground, places, signs, station_rails, greenery}.js` (greenery: the
 optional `real` canopy gate),
 `tools/cherkasy/{fetch_osm, fetch_dem, build_map}.mjs` (fetch_osm: the `shops` part; build_map: `riverProfile`, `useOf`, `heights`, `oldTown`, `signs`), `package.json`. A merge
