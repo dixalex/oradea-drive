@@ -39,6 +39,7 @@ updates merge cleanly. Oradea lives beside them, and one switch picks the city:
 | `tools/oradea/signs.mjs` | places the shop boards on street walls for the map (`tests/oradea-signs.test.mjs`); `fetch_osm.mjs` part `shops` (config `shops`) fetches the names |
 | `src/world/oradea/river.js` | the Crișul Repede: banks lifted to 3.2 m quays at load (the shared 16 m terrain lattice sank them under the water), and decks for the OSM bridges over it, with walks, railings and piers (`tests/oradea-river.test.mjs`) |
 | `src/world/oradea/places.js` | sights for the maps and the explore quest (finding all unlocks the Roadster); a site's own squares go here too, not in its `SITE.places`, so the phone map, which loads no site, lists them |
+| `src/world/oradea/quests.js` | «Secretele Oradiei», the quest book's quest (K): 21 sourced cards from `tools/oradea/research/reports/quests.md`; `HELD` keeps the two Jewish-history cards out until the community reads them (`tests/oradea-quests.test.mjs`) |
 | `src/world/oradea/ui.js`, `tr.js`, `src/i18n.js` | Romanian / English for upstream's Ukrainian UI: a build pass wraps each string in `__tr()` |
 | `src/world/oradea/vehicles.js`, `signs.js` | Romanian plates, bus boards, truck sides, ads and shop signs |
 | `public/assets/oradea/radio/tracks.json` | the car radio's live Oradea stations |
@@ -83,7 +84,7 @@ part of the explore quest. The rebuild cards are in `tools/oradea/agents/`. A ri
 
 `main.js`, `mapview.js`, `audio/engine.js`, `audio/radio.js`, `render/daylight.js`, `npc/lanes.js`, `npc/traffic.js`,
 `npc/vehicles.js`, `kit/logo.js` (`CITY.logoColours`), `ui/botlink.js` (`CITY.feedback`), `ui/hud.js` (`CITY.help`), `ui/consent.js`
-(`CITY.consentNote`, `CITY.source`), `ui/photomode.js` (`CITY.photo`: the photo's wordmark and file name), `ui/peek3d.js` (`CITY.peek`, the Oradea module folder), `game/quests/index.js`, `world/buildings.js` (the `u` looks: additive
+(`CITY.consentNote`, `CITY.source`), `ui/photomode.js` (`CITY.photo`: the photo's wordmark and file name), `ui/peek3d.js` (`CITY.peek`, the Oradea module folder), `game/quests/index.js`, `game/quests.js` (an additive `quiet` card: no money, no jingle), `game/missions.js` (`CITY.missionsOff`: Oradea leaves out the mugging mission), `world/buildings.js` (the `u` looks: additive
 cases Cherkasy never reaches; `b.old` and the flat tiled roof tint for the old town), `world/cherkasy/{ground, places, signs, station_rails, greenery}.js` (greenery: the
 optional `real` canopy gate),
 `tools/cherkasy/{fetch_osm, fetch_dem, build_map}.mjs` (fetch_osm: the `shops` part; build_map: `riverProfile`, `useOf`, `heights`, `oldTown`, `signs`), `package.json`. A merge

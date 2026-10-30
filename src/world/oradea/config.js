@@ -13,7 +13,8 @@
 //   spawn: { at: [x, z] on foot, look: [x, z], carDir: [dx, dz] } (world/oradea/city.js)
 //   busyStreets: names whose lanes get 1.4x the traffic (npc/lanes.js)
 //   pavingCentre: [x, z] the centre whose pavements are pavers, not patched asphalt (cherkasy/ground.js)
-//   places: map places (places.js);  quests: the quest book's quests (game/quests/index.js)
+//   places: map places (places.js);  quests: the quest book's quests (game/quests/index.js; quests.js)
+//   missionsOff: mission types the dispatcher never offers (game/missions.js TYPES keys)
 //   peek: the phone page's 3D models, place id -> site module (peek.js, ui/peek3d.js)
 //   logos: brand files drawn under another name (kit/logo.js): the cars' Everlabs plate (a Cherkasy partner) carries the
 //     organiser's logo, Drumul Vieții (public/assets/brand/oradea-plate.svg, from the NGO's LogoH-UA.svg);  logoColours: those drawn in their own colours
@@ -27,6 +28,7 @@
 import { PLACES } from './places.js';
 import { vehicleAtlas } from './vehicles.js';
 import { PEEK } from './peek.js';
+import { SECRETE } from './quests.js';
 import { t } from '../../i18n.js';
 
 export default {
@@ -73,7 +75,8 @@ export default {
   pavingCentre: [0, 0],
   places: PLACES,
   peek: PEEK,
-  quests: [],
+  quests: [SECRETE],
+  missionsOff: ['mugging'], // a family and church audience: no running people down (game/missions.js)
   logos: { everlabs: 'oradea-plate' }, logoColours: ['everlabs'],
   vehicleAtlas,
   radio: 'assets/oradea/radio/',

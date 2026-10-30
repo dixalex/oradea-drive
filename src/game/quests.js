@@ -14,7 +14,8 @@
 //          reset() (debug), list: [{ quest, cards: [{ ..., x, z, spot: { x, y, z }, zone: { x, z, r }, found }] }], dispose() }
 //   curbSpot(map, x, z, maxR?) -> { x, z, d } | null: the point on the nearest motor road's edge toward (x, z)
 // A quest: { id, title, icon, blurb, reward, rewardAll, cards: [{ id, title, icon, ll: [lat, lon], hint, story,
-//            source: { name, url }, at?: [lat, lon] (where the light stands, when the road beside the place is not it) }] }
+//            source: { name, url }, at?: [lat, lon] (where the light stands, when the road beside the place is not it),
+//            quiet?: true (a memorial: finding it pays nothing and plays no jingle) }] }
 import * as THREE from 'three';
 import { FRAME_OF } from '../world/cherkasy/frame.js';
 import { cue } from '../audio/cue.js';
@@ -185,12 +186,13 @@ export function createQuests({ world, player, scene, hud = null, reward = null, 
   function find(c, q) {
     if (!c || c.found) return false;
     c.found = true; found.add(c.id); save();
-    const n = q.cards.filter((k) => k.found).length, all = n === q.cards.length;
-    reward?.(all ? q.quest.reward + q.quest.rewardAll : q.quest.reward);
+    // a quiet card (a memorial) pays nothing and plays no jingle, so the set's reward comes with the last other card
+    const n = q.cards.filter((k) => k.found).length, all = !c.quiet && q.cards.every((k) => k.found || k.quiet);
     track('quest_card', { quest: q.quest.id, card: c.id, n });
-    cue('partner');
+    if (!c.quiet) { reward?.(all ? q.quest.reward + q.quest.rewardAll : q.quest.reward); cue('partner'); }
     hud?.mission?.banner(all ? `${q.quest.title}: усе знайдено!` : `${c.icon} ${c.title}`,
-      all ? `${n} з ${n} · +${q.quest.reward + q.quest.rewardAll} ₴` : `Таємниця ${n} з ${q.cards.length} · +${q.quest.reward} ₴`, '#c9d3e4');
+      c.quiet ? `Таємниця ${n} з ${q.cards.length}` : all ? `${n} з ${q.cards.length} · +${q.quest.reward + q.quest.rewardAll} ₴`
+        : `Таємниця ${n} з ${q.cards.length} · +${q.quest.reward} ₴`, '#c9d3e4');
     showCard(c); setChip(); inside = c; // its light stays, quieter (FOUND_LIGHT)
     return true;
   }

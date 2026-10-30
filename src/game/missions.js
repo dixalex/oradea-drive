@@ -32,6 +32,7 @@
 import * as THREE from 'three';
 import { cue } from '../audio/cue.js';
 import { track } from '../analytics.js';
+import { CITY } from '../city.js';
 
 export const TYPES = {
   mugging: { title: 'Грабіжники', letter: 'Г', color: '#e8473b', start: 55, weight: 0.26, needs: 'crowd' },
@@ -127,6 +128,7 @@ export function createMissions({ world, player, hud = null, scene, input = null 
   };
   // mission types that can run in this world (the chase needs the traffic sim, mugging / taxi need people)
   const available = () => Object.keys(TYPES).filter((k) => {
+    if (CITY?.missionsOff?.includes(k)) return false; // a city can leave a type out (Oradea: mugging)
     const n = TYPES[k].needs;
     return n === 'traffic' ? !!sim()?.cars : n === 'crowd' ? !!peds()?.spawnActor : true;
   });
