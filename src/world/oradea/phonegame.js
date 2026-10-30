@@ -7,6 +7,7 @@
 //     the tab in the background: a phone may discard it there, which is no crash), open() marks it live again (back in
 //     front), stable() drops the record once the game has run STABLE_AFTER s
 //   startPhone(ctx, { guard, ready }) -> { touch, pill(text, secs), dispose() }   ready: a promise (the consent card)
+//   touchTips(text, kbd = false) -> text with the keyboard keys named as the touch buttons (kbd: a <kbd>'s own text)
 //     - touch controls (ui/touch.js -> core/input.js input.touch): a stick, gas / brake pedals, handbrake, fly (hold: wings
 //       and thrust; the Roadster's jump), horn, map, camera; a look drag on the rest of the screen; keys keep working
 //     - no page zoom or scroll, the viewport fitted to the notch, a "turn the phone" card in portrait, fullscreen on
@@ -138,6 +139,13 @@ const TOUCH_HELP = () => [
   ['', t('Versiunea de telefon (beta) are doar centrul orașului, cu grafică simplă.', 'The phone beta has the city centre only, with simple graphics.')],
 ];
 
+// the HUD's tips are written for a keyboard; on a phone the same actions sit on the touch buttons
+const TOUCH_KEY = { Shift: '✈', W: '▲', S: '▼', Space: 'P' };
+export function touchTips(text, kbd = false) {
+  if (kbd) return TOUCH_KEY[text.trim()] ?? text;
+  return text.replace(/\bShift\b/g, '✈').replace(/(^|[\s·(])(W|S|Space)(?=:| –| -)/g, (m, a, k) => a + TOUCH_KEY[k]);
+}
+
 export function startPhone(ctx, { guard = null, ready = Promise.resolve() } = {}) {
   const doc = globalThis.document, { input, hud, car, world, camera } = ctx;
   const style = doc.createElement('style');
@@ -192,6 +200,23 @@ export function startPhone(ctx, { guard = null, ready = Promise.resolve() } = {}
     cols.prepend(sec);
   }
   globalThis.dispatchEvent?.(new Event('resize')); // the HUD re-measures its chips at their phone size
+
+  // ---- the tips (flight, missions, the Roadster's jump, toasts) with the touch buttons' names, as they appear
+  const tipFix = (n) => {
+    const p = n.parentElement;
+    if (!p || p.closest('.hud-help, textarea, input')) return;
+    const v = n.nodeValue, w = touchTips(v, p.tagName === 'KBD');
+    if (w !== v) n.nodeValue = w;
+  };
+  const tipWalk = (el) => { const it = doc.createTreeWalker(el, 4); for (let n; (n = it.nextNode());) tipFix(n); }; // 4: text nodes
+  tipWalk(doc.body);
+  const tips = new MutationObserver((ms) => {
+    for (const m of ms) {
+      if (m.type === 'characterData') tipFix(m.target);
+      else for (const n of m.addedNodes) if (n.nodeType === 3) tipFix(n); else if (n.nodeType === 1) tipWalk(n);
+    }
+  });
+  tips.observe(doc.body, { subtree: true, childList: true, characterData: true });
 
   // ---- the centre: the big map's teleport only inside it, the car home when it starts outside
   const C = world.phone;
@@ -264,7 +289,7 @@ export function startPhone(ctx, { guard = null, ready = Promise.resolve() } = {}
   return {
     touch, pill,
     dispose() {
-      touch.dispose(); close.remove(); blob.removeFromParent(); for (const m of cabin) m.layers.enable(0); pillEl.remove(); rotate.remove(); style.remove(); doc.body.classList.remove('phone');
+      touch.dispose(); tips.disconnect(); close.remove(); blob.removeFromParent(); for (const m of cabin) m.layers.enable(0); pillEl.remove(); rotate.remove(); style.remove(); doc.body.classList.remove('phone');
       doc.removeEventListener('gesturestart', noGesture); doc.removeEventListener('dblclick', noGesture); doc.removeEventListener('touchmove', noMove);
       globalThis.removeEventListener?.('pagehide', onHide); doc.removeEventListener('visibilitychange', onVis);
     },

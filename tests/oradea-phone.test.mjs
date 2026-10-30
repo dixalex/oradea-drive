@@ -8,7 +8,7 @@ import {
   CENTRE, GROUND_PAD, LINE_PAD, SITE_PAD, EDGE, LEVELS, START, GUARD_WINDOW,
   inDisc, cutLine, clipToCentre, anchorsOf, siteInCentre, outsideMeshes, guardDecision, boundary,
 } from '../src/world/oradea/phone.js';
-import { bootGuard } from '../src/world/oradea/phonegame.js';
+import { bootGuard, touchTips } from '../src/world/oradea/phonegame.js';
 import { stickAxes } from '../src/ui/touch.js';
 import { createInput } from '../src/core/input.js';
 import { createShadows } from '../src/render/shadows.js';
@@ -203,5 +203,10 @@ const read = (f) => readFileSync(root + f, 'utf8');
   inp.dispose();
 }
 
+// the HUD tips on a phone name the touch buttons
+ok(touchTips('Hold Shift – wings and thrust') === 'Hold ✈ – wings and thrust', 'touchTips: Shift is the ✈ button');
+ok(touchTips('Shift: hover · W: thrust · S: brake') === '✈: hover · ▲: thrust · ▼: brake', 'touchTips: W / S are the pedals');
+ok(touchTips('Shift', true) === '✈' && touchTips('S', true) === '▼' && touchTips('M', true) === 'M', 'touchTips: a <kbd> alone');
+ok(touchTips('Spitalul Shiftar · Strada S. Wesselényi') === 'Spitalul Shiftar · Strada S. Wesselényi', 'touchTips: leaves names and plain words alone');
 console.log(fails ? `\n${fails} FAILED` : '\nall passed');
 process.exit(fails ? 1 : 0);
