@@ -40,6 +40,7 @@ updates merge cleanly. Oradea lives beside them, and one switch picks the city:
 | `src/world/oradea/river.js` | the Crișul Repede: banks lifted to 3.2 m quays at load (the shared 16 m terrain lattice sank them under the water), and decks for the OSM bridges over it, with walks, railings and piers (`tests/oradea-river.test.mjs`) |
 | `src/world/oradea/places.js` | sights for the maps and the explore quest (finding all unlocks the Roadster); a site's own squares go here too, not in its `SITE.places`, so the phone map, which loads no site, lists them |
 | `src/world/oradea/quests.js` | «Secretele Oradiei», the quest book's quest (K): 21 sourced cards from `tools/oradea/research/reports/quests.md`; `HELD` keeps the two Jewish-history cards out until the community reads them (`tests/oradea-quests.test.mjs`) |
+| `src/world/oradea/phone.js`, `phonegame.js`, `src/ui/touch.js` | the phone beta (`?phone`; `?desktop&phone` on a computer; the phone map page's "Play (beta)"): the centre only (map.json cut to 1.8 km round Piața Unirii, the sites outside skipped), the phone graphics ladder (minimal < phone < low: no AO, bloom, SMAA or shadow maps, pixel ratio ≤ 1.25, haze ~90 % at 800 m), touch controls through `core/input.js` (`input.touch`), the soft edge, the small-screen HUD, the reload guard (a tab that dies within a minute of starting comes back one level lower) (`tests/oradea-phone.test.mjs`) |
 | `src/world/oradea/savecode.js` | the save code: a line in the controls card (H) copies all progress as one text code and takes one back, since Safari deletes a site's storage after 7 days without a visit (`tests/oradea-savecode.test.mjs`) |
 | `src/world/oradea/ui.js`, `tr.js`, `src/i18n.js` | Romanian / English for upstream's Ukrainian UI: a build pass wraps each string in `__tr()` |
 | `src/world/oradea/vehicles.js`, `signs.js` | Romanian plates, bus boards, truck sides, ads and shop signs |
@@ -83,11 +84,11 @@ part of the explore quest. The rebuild cards are in `tools/oradea/agents/`. A ri
 
 ## Shared files touched (one or two lines each, all `CITY`-guarded)
 
-`main.js`, `mapview.js`, `audio/engine.js`, `audio/radio.js`, `render/daylight.js`, `npc/lanes.js`, `npc/traffic.js`,
+`main.js` (`?phone`: the phone ladder and module), `mapview.js` (the phone beta button), `core/input.js` (`input.touch`), `render/{post, shadows, sky}.js` (the `phone` / `minimal` levels), `world/farcull.js` and `world/cherkasy/proxies.js` (a `far` distance), `ui/perfhint.js` (the phone levels' names), `ui/mapview.css`, `audio/engine.js`, `audio/radio.js`, `render/daylight.js`, `npc/lanes.js`, `npc/traffic.js`,
 `npc/vehicles.js`, `kit/logo.js` (`CITY.logoColours`), `ui/botlink.js` (`CITY.feedback`), `ui/hud.js` (`CITY.help`), `ui/consent.js`
 (`CITY.consentNote`, `CITY.source`), `ui/photomode.js` (`CITY.photo`: the photo's wordmark and file name), `ui/peek3d.js` (`CITY.peek`, the Oradea module folder), `game/quests/index.js`, `game/quests.js` (an additive `quiet` card: no money, no jingle), `game/missions.js` (`CITY.missionsOff`: Oradea leaves out the mugging mission), `world/buildings.js` (the `u` looks: additive
 cases Cherkasy never reaches; `b.old` and the flat tiled roof tint for the old town), `world/cherkasy/{ground, places, signs, station_rails, greenery}.js` (greenery: the
-optional `real` canopy gate),
+optional `real` canopy gate; ground: the phone tier's `keep` box),
 `tools/cherkasy/{fetch_osm, fetch_dem, build_map}.mjs` (fetch_osm: the `shops` part; build_map: `riverProfile`, `useOf`, `heights`, `oldTown`, `signs`), `package.json`. A merge
 conflict from upstream lands on those lines.
 
@@ -98,7 +99,8 @@ links, his radio songs, the Ukrainian voice lines, the Cherkasy map data and the
 
 ## Open items
 
-- Phones: `ORADEA-MOBILE.md` (measured memory, phone limits, the plan); `tools/oradea/memory/` measures the load.
+- Phones: `ORADEA-MOBILE.md` (measured memory, phone limits, the plan, the phone beta's numbers); `tools/oradea/memory/`
+  measures the load. The phone beta (`?phone`) waits for real-phone tests before phones are sent to it by default.
 - More landmarks: `tools/oradea/agents/` holds the agent brief and two unstarted cards (reformed churches and synagogues, pentecostal churches). The civic landmarks are built (`sites/civic.js`: Astoria, the palaces of Justice, Finance and the Post, the Prefecture, Lotus Center, Nymphaea, four water towers); Palatul Copiilor, Füchsl, Poynár and Lévay are not.
 
 - The dispatcher and passenger voice lines: record Romanian and English ones (`tools/audio/gen.mjs`, an ElevenLabs key).

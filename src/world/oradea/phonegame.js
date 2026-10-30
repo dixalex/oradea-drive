@@ -89,9 +89,12 @@ body.phone .hud-banner { top: 22vh; font-size: 22px; } body.phone .hud-banner sm
 body.phone .hud-hint, body.phone .hud-fly { font-size: 12px; bottom: 30vh; padding: 5px 10px; }
 body.phone .hud-gas { bottom: 34vh; grid-template-columns: auto 120px auto; font-size: 10px; }
 body.phone .hud-perf { bottom: 46px; font-size: 12px; }
-body.phone .hud-help { pointer-events: auto; top: 40px; left: calc(8px + env(safe-area-inset-left)); width: min(560px, calc(100vw - 16px));
+body.phone .hud-help { z-index: 3; pointer-events: none; visibility: hidden; top: 40px; left: calc(8px + env(safe-area-inset-left)); width: min(560px, calc(100vw - 16px));
   max-height: calc(100vh - 52px); font-size: 11.5px; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+body.phone .hud-help.on { pointer-events: auto; visibility: visible; } /* closed, it must not catch the stick's finger */
 body.phone .hud-help .cols { column-count: 1; }
+body.phone .bigmap .bm-north { right: calc(70px + env(safe-area-inset-right)); }
+body.phone .bigmap .bm-scale { bottom: auto; top: 70px; right: calc(16px + env(safe-area-inset-right)); }
 body.phone .hud-help .r { grid-template-columns: 96px 1fr; }
 body.phone .hud-help section:not(.ph-touch):not(:last-child) { display: none; } /* the keyboard's groups; the city's own (ideas) stays */
 body.phone .quest-card, body.phone .partner-card { left: 50%; right: auto; top: max(6px, env(safe-area-inset-top)); width: min(380px, 52vw); max-height: 60vh;
