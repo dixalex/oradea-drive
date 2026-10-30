@@ -44,6 +44,7 @@ export function finishSet(group, B, M, shade = ['plaster', 'stone', 'det', 'roof
     const geo = D.build();
     out.verts += D.v; out.tris += geo.index.count / 3; out.meshes++;
     group.add(Object.assign(new THREE.Mesh(geo, M[k]), { name: `unirii-${k}`, castShadow: shade.includes(k), receiveShadow: k !== 'water' }));
+    D.free(); // the site's closures may still hold B
   }
   return out;
 }

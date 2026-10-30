@@ -113,6 +113,7 @@ export function finishSet(group, B, M, name = 'orthodox') {
     const geo = D.build();
     out.verts += D.v; out.tris += geo.index.count / 3; out.meshes++;
     group.add(Object.assign(new THREE.Mesh(geo, M[k]), { name: `${name}-${k}`, castShadow: k !== 'lit' && k !== 'det', receiveShadow: true }));
+    D.free(); // the site's closures may still hold B
   }
   return out;
 }

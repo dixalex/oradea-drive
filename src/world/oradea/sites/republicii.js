@@ -86,6 +86,7 @@ export const SITE = {
         if (!(D?.v > 0) || !mats[k]) continue;
         verts += D.v; meshes++;
         grp.add(Object.assign(new THREE.Mesh(D.build({ part: k === 'det' || k === 'fac' || k === 'bak' }), mats[k]), { name: `${tag}-${k}`, castShadow: k !== 'sett' && k !== 'slab', receiveShadow: true }));
+        D.free(); // the site's closures may still hold the kit (.v stays for the log)
       }
     };
     emit(group, K, 'republicii');

@@ -14,6 +14,7 @@
 //     covered(x, z): true where a hand-built site already has its own (its clear area); clear: keeps trees off the lot
 import * as THREE from 'three';
 import { MB, M4 } from '../../kit/mesh.js';
+import { releaseOnUpload } from '../../kit/batch.js';
 import { SG } from '../cherkasy/sculpt.js';
 import { put, mapper } from '../cherkasy/bohdan.js';
 import { nightK } from '../../render/daylight.js';
@@ -258,7 +259,7 @@ export function buildParks({ root, map, solids: S, heightAt, onAsphalt = () => f
   const group = Object.assign(new THREE.Group(), { name: 'oradea-parks' });
   const wide = new THREE.Sphere(new THREE.Vector3(), 1e5);
   const add = (geo, mat, name, cast = true) => {
-    const m = new THREE.Mesh(geo, mat); m.name = name; m.castShadow = cast; m.receiveShadow = true; group.add(m); return m;
+    const m = new THREE.Mesh(releaseOnUpload(geo), mat); m.name = name; m.castShadow = cast; m.receiveShadow = true; group.add(m); return m;
   };
   if (steel.v) add(steel.build(), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.25 }), 'parks-playgrounds');
   if (stone.v) add(stone.build(), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 }), 'parks-stone');
@@ -266,6 +267,7 @@ export function buildParks({ root, map, solids: S, heightAt, onAsphalt = () => f
   if (water.v) add(water.build(), new THREE.MeshStandardMaterial({ color: 0x41707c, roughness: 0.06, metalness: 0.2, transparent: true, opacity: 0.88 }), 'parks-water', false);
   const jetMat = new THREE.MeshStandardMaterial({ color: 0xeaf4f6, roughness: 0.2, transparent: true, opacity: 0.5, depthWrite: false, emissive: 0x9fd0e0, emissiveIntensity: 0.1, side: THREE.DoubleSide });
   if (jets.v) add(jets.build(), jetMat, 'parks-jets', false);
+  for (const D of [steel, stone, water, jets]) D.free(); // the update closures below share this scope (bronze is an SG)
 
   const one = new THREE.Vector3(1, 1, 1), m4 = new THREE.Matrix4(), qt = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), pv = new THREE.Vector3();
   const pool = (geo, mat, cap, name, cast) => {

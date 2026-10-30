@@ -65,6 +65,7 @@ export const SITE = {
       if (!D.v) continue;
       verts += D.v; meshes++;
       group.add(Object.assign(new THREE.Mesh(D.build(), M[k]), { name: `ferdinand-${k}`, castShadow: shade.has(k), receiveShadow: true }));
+      D.free(); // the site's closures may still hold B
     }
     const bronzeMat = floodlit(new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.55, roughness: 0.55, emissive: 0xc99a62, emissiveIntensity: 0 }), flood, 12, 'ferdinand-bronze');
     const figMat = floodlit(new THREE.MeshStandardMaterial({ color: 0xe8e3d6, roughness: 0.75, emissive: 0xffe6c8, emissiveIntensity: 0 }), wash, 14, 'ferdinand-fig');

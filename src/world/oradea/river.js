@@ -18,6 +18,7 @@
 //     parapets. deckAt feeds the lane network (npc/lanes.js), clear keeps generated trees off the decks.
 import * as THREE from 'three';
 import { MB } from '../../kit/mesh.js';
+import { releaseOnUpload } from '../../kit/batch.js';
 import { DP } from '../materials.js';
 import { WATER_Y } from '../water.js';
 import { GY, SURF } from '../cherkasy/ground.js';
@@ -240,7 +241,8 @@ export function buildBridges({ root, solids: S, ground, detailMat }, bridges) {
   const walkM = top.mesh(groundMat(ground), 'bridge-walks');
   if (walkM) group.add(walkM);
   const mat = detailMat ?? new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
-  group.add(Object.assign(new THREE.Mesh(det.build({ part: true }), mat), { name: 'bridge-structure', castShadow: true, receiveShadow: true }));
+  group.add(Object.assign(new THREE.Mesh(releaseOnUpload(det.build({ part: true })), mat), { name: 'bridge-structure', castShadow: true, receiveShadow: true }));
+  det.free(); // near() below shares this scope (.v stays for the log)
   console.log(`[oradea] ${bridges.length} river bridges (${bridges.filter((b) => b.foot && !b.merged).length} footbridges, ${bridges.filter((b) => b.merged).length} footways taken into a road bridge's walk), ${piers} piers, ${((det.v + top.v) / 1000).toFixed(1)}k verts in ${(performance.now() - t0).toFixed(0)} ms`);
 
   const near = (x, z, pad) => {

@@ -16,6 +16,7 @@
 //     into world.collideDynamic, like the traffic). clear(x, z): no generated tree within 3 m of a track.
 import * as THREE from 'three';
 import { MB } from '../../kit/mesh.js';
+import { releaseOnUpload } from '../../kit/batch.js';
 import { DP } from '../materials.js';
 import { WATER_Y } from '../water.js';
 
@@ -186,7 +187,8 @@ export function buildTrams({ map, root, heightAt, ground, detailMat }) {
 
   const group = Object.assign(new THREE.Group(), { name: 'oradea-trams' });
   root.add(group);
-  group.add(Object.assign(new THREE.Mesh(T.build({ part: true, uv: false }), mat), { name: 'tram-track', receiveShadow: true }));
+  group.add(Object.assign(new THREE.Mesh(releaseOnUpload(T.build({ part: true, uv: false })), mat), { name: 'tram-track', receiveShadow: true }));
+  const trackV = T.v; T.free(); // the trams' update closure shares this scope
   group.add(poleMesh);
   const wireGeo = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(wire, 3));
   group.add(Object.assign(new THREE.LineSegments(wireGeo, new THREE.LineBasicMaterial({ color: 0x23272b })), { name: 'tram-wire' }));
@@ -224,7 +226,7 @@ export function buildTrams({ map, root, heightAt, ground, detailMat }) {
   };
   pose();
   const stats = { ways: ways.length, trackKm: +(trackM / 1000).toFixed(1), poles: poles.length, routes: routes.length, trams: cars.length,
-    verts: T.v + poleGeo.attributes.position.count * poles.length + (endGeo.attributes.position.count * 2 + midGeo.attributes.position.count) * cars.length,
+    verts: trackV + poleGeo.attributes.position.count * poles.length + (endGeo.attributes.position.count * 2 + midGeo.attributes.position.count) * cars.length,
     ms: Math.round(performance.now() - t0) };
   console.log(`[oradea] trams: ${stats.ways} track ways (${stats.trackKm} km), ${stats.poles} poles, ${stats.routes} routes, ${stats.trams} trams, ${stats.ms} ms`);
 

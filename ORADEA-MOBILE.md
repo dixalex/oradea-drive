@@ -33,9 +33,10 @@ Measured 2026-10-30 the same way (`tools/oradea/memory/profile.mjs`, lowest grap
 | Ground tiles release their CPU copy after upload (`kit/batch.js releaseOnUpload`) | 722 MB | |
 | Collision arrays trimmed after the build (`collision.compact()`) | 700 MB | |
 | Rails and wet bands release after upload | 662 MB | 1,111 MB |
+| Mesh builders drop their scratch once built (`MeshBuilder.free()`: the site kits, trams, parks, bridges) | 591 MB | |
 
-Left from step 1: mesh-builder scratch kept alive (~37 MB in `kit/mesh.js` Grow buffers), roof-edge anchors (`zips`),
-Float32 collision. Tiles not drawn yet keep their CPU copy until they are first drawn, so the number falls further
+Left from step 1: roof-edge anchors (`zips`), Float32 collision. The sites' own geometry keeps its CPU copy (~26 MB):
+the far stand-ins (`world/cherkasy/proxies.js`) read it on the first lower graphics level. Tiles not drawn yet keep their CPU copy until they are first drawn, so the number falls further
 during a drive.
 
 The engine stays: `tools/oradea/research/reports/engine.md` (2026-10-30) found no engine that fixes these problems by

@@ -28,6 +28,7 @@ export function makeGroup(name, base, groundMat, index, seed = 7) {
       if (ctx.F.v) add(ctx.F.build(), facadeMat, 'fac', true, ctx.F.v);
       if (ctx.D.v) add(ctx.D.build({ part: true }), detailMat, 'det', true, ctx.D.v);
       if (ctx.G.v) add(ctx.G.build(), groundMat, 'ground', false, ctx.G.v);
+      ctx.D.free(); ctx.G.free(); // ctx outlives the build
       base.root.add(group);
       return { group, verts, meshes };
     },
