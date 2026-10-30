@@ -123,6 +123,17 @@ export const PLACES = [
     note: t('Franciscană, 1732–1743; fațada cu trei turnuri din 1903–1905', 'Franciscan, 1732–1743; the three-tower front of 1903–1905') },
   { id: 'mizericordieni', kind: 'sight', icon: '⛪', bld: [41416354], name: t('Biserica Mizericordienilor «Îngerii păzitori»', 'Misericordians\' church «Guardian Angels»'),
     note: t('În jurul anului 1754, cu două turnuri subțiri, în curtea fostului spital', 'About 1754, with two slender spires, in the old hospital\'s grounds') },
+  // the Reformed, Lutheran and Jewish places hand-built in sites/reformed
+  { id: 'reformataorasulnou', kind: 'sight', icon: '⛪', bld: [286245387], name: t('Biserica reformată din Orașul Nou', 'Reformed church of the Orașul Nou'),
+    note: t('Neoclasică, 1835–1853: fronton între două turnuri cu cupole argintii, pe Strada Jean Calvin', 'Neoclassical, 1835–1853: a pediment between two towers under silver domes, on Strada Jean Calvin') },
+  { id: 'reformataolosig', kind: 'sight', icon: '⛪', bld: [423125881], name: t('Biserica reformată din Olosig', 'Reformed church of Olosig'),
+    note: t('Fațadă crem cu pilaștri înalți și turn cu ceas sub coif de aramă', 'A cream front with giant pilasters and a clock tower under a copper cap') },
+  { id: 'evanghelica', kind: 'sight', icon: '⛪', bld: [1455869295], name: t('Biserica Evanghelică-Luterană', 'Lutheran church'),
+    note: t('Neogotică, din cărămidă galbenă, cu turla înaltă și turnul scării; Str. Tudor Vladimirescu 26', 'Neo-Gothic in yellow brick, with a tall spire and a stair turret; Str. Tudor Vladimirescu 26') },
+  { id: 'sinagogamare', kind: 'sight', icon: '🕍', bld: [286239557], name: t('Sinagoga Mare Ortodoxă', 'Great Orthodox Synagogue'),
+    note: t('1890, pe Strada Mihai Viteazul: cărămidă și ocru, două turnuri cu cupole și Tablele Legii pe fronton', '1890, on Strada Mihai Viteazul: brick and ochre, two domed towers and the Tablets of the Law over the gable') },
+  { id: 'aachvasrein', kind: 'sight', icon: '🕍', bld: [286245386], name: t('Sinagoga Aachvas Rein · Muzeul Istoriei Evreilor', 'Aachvas Rein Synagogue · Museum of Jewish History'),
+    note: t('Sinagogă ortodoxă din 1926, pe Strada Primăriei; din 2018 Muzeul Istoriei Evreilor din Oradea', 'An Orthodox synagogue of 1926 on Strada Primăriei; since 2018 the Museum of Jewish History of Oradea') },
   // the universities hand-built in sites/university
   { id: 'univoradea', kind: 'sight', icon: '🎓', bld: [309251497, 309261868, 309262055, 309251381, 309262730, 309261311], name: t('Universitatea din Oradea – campusul principal', 'University of Oradea – main campus'),
     note: t('Fosta școală de jandarmi, în stil Secession, cu rectoratul și turnul lui rotund', 'The former gendarmerie school in Secession style, with the rectorate and its round tower') },
