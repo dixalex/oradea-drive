@@ -43,6 +43,7 @@ import { PLACES } from './places.js';
 import CONFIG from './config.js';
 import { ASSETS } from '../../city.js';
 import { t } from '../../i18n.js';
+import { applyFixes } from './fixes.js';
 
 const guard = (label, fn, fallback = null) => { try { return fn() ?? fallback; } catch (e) { console.error(`[oradea] ${label} failed`, e); return fallback; } };
 const nextTask = () => new Promise((res) => { const ch = new MessageChannel(); ch.port1.onmessage = () => { ch.port1.close(); res(); }; ch.port2.postMessage(0); });
@@ -120,6 +121,7 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
     asset('canopy.bin').then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null),
   ]);
   map.buildings = buildingsJson;
+  applyFixes(map); // hand corrections to generic buildings (fixes.js)
   stage('load', 0.12, t('Relief și străzi…', 'Terrain and streets…'));
 
   const geo = guard('frame', () => FRAME_OF(map));
