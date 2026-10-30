@@ -22,7 +22,24 @@ reload off (`tools/oradea/memory/`). Long drives were not measured.
 | Roof-edge anchors (`zips`) | ~24 MB of JS objects |
 | Draw load, high / medium / low | 647 / 562 / 382 draw calls, 4.3 / 3.9 / 2.9 M triangles, 218 shader programs |
 
-The two closure fixes, tried as a patch in a test browser: page memory 1,079 → 805 MB.
+## Step 1 so far (on `oradea`, and offered upstream as branch `upstream-memory`)
+
+Measured 2026-10-30 the same way (`tools/oradea/memory/profile.mjs`, lowest graphics level, right after load):
+
+| Change | Oradea page memory | Cherkasy page memory |
+|---|---|---|
+| Before | 1,000 MB | 1,537 MB |
+| The two closure leaks (`buildings.js`, `kit/batch.js`) | 795 MB | |
+| Ground tiles release their CPU copy after upload (`kit/batch.js releaseOnUpload`) | 722 MB | |
+| Collision arrays trimmed after the build (`collision.compact()`) | 700 MB | |
+| Rails and wet bands release after upload | 662 MB | 1,111 MB |
+
+Left from step 1: mesh-builder scratch kept alive (~37 MB in `kit/mesh.js` Grow buffers), roof-edge anchors (`zips`),
+Float32 collision. Tiles not drawn yet keep their CPU copy until they are first drawn, so the number falls further
+during a drive.
+
+The engine stays: `tools/oradea/research/reports/engine.md` (2026-10-30) found no engine that fixes these problems by
+itself, and every swap would cost Oleg's upstream.
 
 ## Phone limits
 
@@ -55,7 +72,7 @@ loaders). They help his Cherkasy game the same way, so offer them upstream rathe
 Every new hand-built site adds draw calls (the landmark budget is up to 15 each). The phone tier must cull or merge far
 sites, or the centre alone passes 200.
 
-## Upstream pull request (planned, not started)
+## Upstream pull request (branch `upstream-memory`, not opened yet)
 
 Shared-engine changes go to Oleg's repository as pull requests, not as fork-only edits:
 
