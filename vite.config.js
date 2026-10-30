@@ -1,7 +1,7 @@
 // Vite config for the fork's city builds. Without VITE_CITY it is Vite's defaults (the upstream Cherkasy game).
 // With VITE_CITY=oradea:
 //   - index.html gets the Oradea title, description and share card, and no Ukrainian loading text; ?phone opens the game
-//     (its phone tier) on a phone instead of the map page;
+//     (its phone tier) on a phone instead of the map page, and a touch screen's start card leaves out the keyboard keys;
 //   - a small stylesheet turns the bot chip and the big map's bot link into the WhatsApp feedback chat (config.feedback;
 //     bot/ belongs to the Cherkasy game) and hides the other bot links, and an RO / EN switch (src/i18n.js reads the
 //     choice) sits in the top-right corner;
@@ -34,7 +34,9 @@ const ORADEA_HEAD = `<title>Oradea Drive</title>
     .bm-legend .bm-bot { background: rgba(26, 160, 80, .9) !important; } .bm-legend .bm-bot:hover { background: #25d366 !important; }
     #lang { position: fixed; top: 8px; right: 8px; z-index: 50; display: flex; border-radius: 6px; overflow: hidden; font: 600 11px system-ui, sans-serif; opacity: .8; }
     #lang button { border: 0; padding: 3px 7px; background: #0d1117cc; color: #9aa4b2; cursor: pointer; }
-    #lang button.on { background: #f2c14e; color: #111; }</style>`;
+    #lang button.on { background: #f2c14e; color: #111; }
+    /* a touch screen (the phone beta): the start card's keyboard keys only pushed the terms below the fold */
+    @media (hover: none) and (pointer: coarse) { .consent .c-keys { display: none !important; } }</style>`;
 
 // the language switch: the saved choice wins over the browser's language (src/i18n.js); a switch reloads the page
 const LANG_SWITCH = `<div id="lang"><button data-l="ro">RO</button><button data-l="en">EN</button></div>
