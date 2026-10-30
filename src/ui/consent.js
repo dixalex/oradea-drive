@@ -40,6 +40,7 @@ export function showConsent({ overlay }) {
       Розкладка не важлива – кирилиця теж працює. У грі <kbd>H</kbd> покаже всі клавіші керування.</div>
     ${CITY?.consentNote ? `<div class="c-note">${CITY.consentNote}</div>` : ''}
     <div class="c-foot">Відкритий код, GNU AGPL-3.0</div>
+    ${CITY?.credit ? `<div class="c-foot">${CITY.credit}</div>` : ''}
     ${CITY?.source ? `<div class="c-foot"><a href="${CITY.source}" target="_blank" rel="noopener">${CITY.source.replace(/^https:\/\//, '')}</a></div>` : ''}`;
   overlay.classList.add('with-consent');
   overlay.querySelector('.bar')?.after(card);

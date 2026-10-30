@@ -13,6 +13,7 @@
 .mv-card b { display: block; font-size: 19px; margin-bottom: 8px; color: #fff; }
 .mv-card p { margin: 0 0 10px; color: #c9d3e4; }
 .mv-card .mv-soft { color: #f2c14e; font-weight: 600; }
+.mv-card .mv-credit { margin: 10px 0 0; font-size: 11px; opacity: .6; } .mv-card .mv-credit a { color: inherit; }
 .mv-row { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
 .mv-row button { font: 600 15px system-ui, sans-serif; padding: 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .2);
   color: #fff; background: rgba(34, 44, 64, .95); cursor: pointer; }

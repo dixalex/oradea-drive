@@ -51,8 +51,9 @@ const ORADEA_HEAD = `<title>Oradea Drive</title>
     .bm-legend .bm-bot { background: rgba(26, 160, 80, .9) !important; } .bm-legend .bm-bot:hover { background: #25d366 !important; }
     /* money as Romanians write it: 12.345 lei (hud.js formats with CITY.locale) */
     .hud-money { display: flex; flex-direction: row-reverse; } .hud-money b { margin: 0 0 0 6px !important; }
-    /* left of the money (top right): over it, the switch hid the money's digits */
-    #lang { position: fixed; top: calc(2.4vh + 6px); right: calc(2.4vw + 170px); z-index: 50; display: flex; border-radius: 6px; overflow: hidden; font: 600 11px system-ui, sans-serif; opacity: .8; }
+    #lang { position: fixed; top: 8px; right: 8px; z-index: 50; display: flex; border-radius: 6px; overflow: hidden; font: 600 11px system-ui, sans-serif; opacity: .8; }
+    /* in the game, left of the money (top right): over it, the switch hid the money's digits */
+    :root:has(.hud-money) #lang { top: calc(2.4vh + 6px); right: calc(2.4vw + 170px); }
     #lang button { border: 0; padding: 3px 7px; background: #0d1117cc; color: #9aa4b2; cursor: pointer; }
     #lang button.on { background: #f2c14e; color: #111; }
     /* a touch screen (the phone beta): the start card's keyboard keys only pushed the terms below the fold */

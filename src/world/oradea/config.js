@@ -41,10 +41,15 @@ export default {
   roadsterNewsAfter: 3, // main.js: the second car's news card waits until a player has found 3 sights (a later start)
   photo: { file: 'oradea-drive', a: 'oradea.', b: 'drumulvietii.ro', sub: 'ORADEA DRIVE' }, // ui/photomode.js: the photo's wordmark and file name
   source: 'https://github.com/dixalex/oradea-drive/tree/oradea',
+  // the credit upstream's AGPL and courtesy ask for: the start card, the controls card (H), the phone map page
+  credit: t('Construit pe Cherkasy Drive, jocul open source al lui Oleg Pasko (GNU AGPL-3.0)', 'Built on Cherkasy Drive, Oleg Pasko\'s open-source game (GNU AGPL-3.0)'),
   help: [[t('Idei, cereri, parteneri', 'Ideas, requests, partners'), [['I', t('WhatsApp: o idee, o greșeală sau ceva ce vrei în joc (școala ta, biserica, firma, o clădire)',
     'WhatsApp: an idea, a bug, or something you want in the game (your school, church, business, a building)')],
     [t('Clic dreapta', 'Right click'), t('pe harta mare (M): îmbunătățește clădirea de acolo sau devino partener acolo – WhatsApp, cu locul atașat',
-      'on the big map (M): improve the building there or become a partner there – WhatsApp, with the spot attached')]]]],
+      'on the big map (M): improve the building there or become a partner there – WhatsApp, with the spot attached')]]],
+    [t('Despre', 'About'), [['', t('Oradea Drive e un proiect Drumul Vieții, construit pe Cherkasy Drive, jocul open source al lui Oleg Pasko (GNU AGPL-3.0).',
+      'Oradea Drive is a Drumul Vieții project, built on Cherkasy Drive, Oleg Pasko\'s open-source game (GNU AGPL-3.0).')],
+      ['', t('Codul sursă: github.com/dixalex/oradea-drive · licențe: /assets/oradea/third-party-licenses.txt', 'Source code: github.com/dixalex/oradea-drive · licences: /assets/oradea/third-party-licenses.txt')]]]],
   consentNote: t('💬 Ai o idee, ai găsit o greșeală sau vrei ceva în joc – școala ta, biserica, firma, o clădire? Scrie-ne pe WhatsApp: tasta <kbd>I</kbd> sau butonul verde de sus. Oradea Drive e un proiect Drumul Vieții.',
     '💬 Got an idea, found a bug, or want something in the game – your school, church, business or a building? Message us on WhatsApp: press <kbd>I</kbd> or the green button at the top. Oradea Drive is a Drumul Vieții project.'),
   tools: {

@@ -58,6 +58,11 @@ export async function startMapView({ container = document.body } = {}) {
     const play = Object.assign(document.createElement('a'), { className: 'mv-play', href, textContent: `🚗 ${CITY.phone.play}` });
     $('.mv-row').prepend(play);
     $('.mv-anyway')?.remove(); // the beta replaces 'try the game anyway': the whole city peaks near 1 GB on a phone
+    if (CITY.credit) { // upstream's credit and the source (the AGPL), as on the game's start card
+      const c = Object.assign(document.createElement('p'), { className: 'mv-credit' });
+      c.append(`${CITY.credit} · `, Object.assign(document.createElement('a'), { href: CITY.source, target: '_blank', rel: 'noopener', textContent: 'GitHub' }));
+      $('.mv-card').append(c);
+    }
     $('.mv-pill').after(Object.assign(document.createElement('a'), { className: 'mv-pill mv-pill-play', href, textContent: `🚗 ${CITY.phone.play}` }));
   }
   $('.mv-pill').onclick = () => show(true);
