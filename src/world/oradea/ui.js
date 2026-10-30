@@ -192,10 +192,10 @@ export const UI = {
   "Будуємо Черкаси…": ["Construim Oradea…", "Building Oradea…"],
   "Компілюємо шейдери…": ["Compilăm shaderele…", "Compiling shaders…"],
   // mapview.js
-  "Покататись – лише на комп'ютері": ["Condusul – doar pe calculator", "Driving is for computers only"],
-  "Черкаси Драйв – велика 3D-гра: ціле місто з трафіком і людьми, телефон її не потягне. Відкрийте": ["Oradea Drive e un joc 3D mare: un oraș întreg cu trafic și oameni, telefonul nu-l duce. Deschide", "Oradea Drive is a big 3D game: a whole city with traffic and people, too much for a phone. Open"],
+  "Покататись – лише на комп'ютері": ["Condusul – cel mai bine pe calculator", "Driving is best on a computer"],
+  "Черкаси Драйв – велика 3D-гра: ціле місто з трафіком і людьми, телефон її не потягне. Відкрийте": ["Oradea Drive e un joc 3D mare: un oraș întreg cu trafic și oameni. Deschide", "Oradea Drive is a big 3D game: a whole city with traffic and people. Open"],
   "у браузері на ноутбуці чи комп'ютері – і відчуйте себе драйвером.": ["în browser pe laptop sau calculator.", "in a browser on a laptop or desktop."],
-  "А з телефона зараз можна погортати мапу міста: пам'ятки, партнери, вулиці.": ["De pe telefon poți răsfoi harta orașului: obiective și străzi.", "On a phone you can browse the city map: sights and streets."],
+  "А з телефона зараз можна погортати мапу міста: пам'ятки, партнери, вулиці.": ["Pe telefon poți încerca versiunea beta, doar cu centrul orașului, sau poți răsfoi harta: obiective și străzi.", "On a phone you can try the beta, with the city centre only, or browse the city map: sights and streets."],
   "Дивитись карту": ["Vezi harta", "See the map"],
   "Надіслати собі посилання": ["Trimite-ți linkul", "Send yourself the link"],
   "Все одно спробувати гру": ["Încearcă jocul oricum", "Try the game anyway"],
