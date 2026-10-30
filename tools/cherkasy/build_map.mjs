@@ -223,6 +223,36 @@ for (const e of roadEls) {
   roads.push({ id: e.id, P, w, cls: t.highway, kind, name: t.name ?? t['name:uk'] ?? '', br: t.bridge && t.bridge !== 'no' ? 1 : 0, ow: t.oneway === 'yes' ? 1 : 0, lanes: lanes || 0, sw: t.sidewalk ?? '',
     tw: t.trolley_wire === 'yes' ? 1 : 0, nodes: e.nodes, raw: e.geometry.map(g => proj(g.lat, g.lon)) });
 }
+// Oradea only: the road ways at another level than the street – tunnels (left out of `roads` above: the ground, the lanes
+// and the maps would put them on the surface), cuttings, embankments, bridges, layer != 0 – with their OSM ids, so the
+// hand-built passages (src/world/oradea/sites/passages*.js) can pick their ways by id; the ones also in `roads` have
+// the same points there. map.json `levels`: [{ id, p, w, c, k, n?, ow?, ln?, lv? (layer), tn? cut? emb? br? (1) }]
+const levels = [];
+if (CITY?.id === 'oradea') {
+  const seen = new Set();
+  for (const e of roadEls) {
+    const t = e.tags || {}; if (!t.highway || !e.geometry || t.area === 'yes' || seen.has(e.id)) continue;
+    const def = ROAD[t.highway]; if (!def) continue;
+    const tn = !!t.tunnel && !/^(no|building_passage|culvert)$/.test(t.tunnel), br = !!t.bridge && t.bridge !== 'no';
+    const cut = !!t.cutting && t.cutting !== 'no', emb = !!t.embankment && t.embankment !== 'no', lv = parseInt(t.layer, 10) || 0;
+    if (!(tn || br || cut || emb || lv) || (def[1] !== 'm' && !tn)) continue;
+    if (t.access === 'private' && t.highway === 'service') continue;
+    let P = e.geometry.map(g => proj(g.lat, g.lon));
+    if (!P.some(([x, z]) => inRect(REGION, x, z, 400))) continue;
+    seen.add(e.id);
+    P = dp(P, 0.3, false);
+    let w = def[0];
+    const lanes = parseFloat(t.lanes);
+    if (def[1] === 'm' && lanes > 0) w = Math.max(w * 0.7, Math.min(w * 1.6, lanes * 3.4 + 1));
+    if (t.width && parseFloat(t.width) > 1) w = Math.min(30, parseFloat(t.width));
+    if (t.service === 'driveway' || t.service === 'parking_aisle' || t.service === 'alley') w = Math.min(w, t.service === 'parking_aisle' ? 5.5 : 3.6);
+    const kind = (def[1] === 'm' || def[1] === 'p') && t.surface && UNPAVED.test(t.surface) ? 'd' : def[1];
+    levels.push({ id: e.id, p: flat(P), w, c: t.highway, k: kind, n: (t.name ?? '') || undefined, ow: t.oneway === 'yes' ? 1 : undefined,
+      ln: lanes || undefined, lv: lv || undefined, tn: tn ? 1 : undefined, cut: cut ? 1 : undefined, emb: emb ? 1 : undefined, br: br ? 1 : undefined });
+  }
+  levels.sort((a, b) => a.id - b.id);
+  console.log('level ways (tunnels, cuttings, embankments, bridges)', levels.length);
+}
 const motor = roads.filter(r => r.kind === 'm');
 const MAIN = new Set(['trunk', 'primary', 'secondary', 'tertiary', 'motorway', 'trunk_link', 'primary_link', 'secondary_link', 'tertiary_link']);
 console.log('roads', roads.length, 'motor', motor.length);
@@ -781,6 +811,7 @@ const map = {
   cover: { ...coverOut, pond: polysToRings(simp(ponds, 0.4)) }, zones: coverLu, rails, trees, pois, ...(trams.length ? { trams } : {}), ...(signs.length ? { signs } : {}),
   parking: parkingLots,
 };
+if (CITY?.id === 'oradea') map.levels = levels; // the passages' ways (above)
 mkdirSync(OUT, { recursive: true });
 // buildings go to their own file: the published artifact takes text files up to 16 MB each (city.js joins them)
 const { buildings, ...rest } = map;
