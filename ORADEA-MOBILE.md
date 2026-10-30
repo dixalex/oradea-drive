@@ -42,6 +42,47 @@ during a drive.
 The engine stays: `tools/oradea/research/reports/engine.md` (2026-10-30) found no engine that fixes these problems by
 itself, and every swap would cost Oleg's upstream.
 
+## Step 2: the phone beta (`?phone`)
+
+Opt-in only: `?phone` on a phone, `?desktop&phone` on a computer, or "Joacă (beta)" on the phone map page. Phones are
+still sent to the map page by default.
+
+| Part | What it does |
+|---|---|
+| Centre only | `map.json` cut to 1.8 km round Piața Unirii in memory: 8,010 of 30,661 buildings, roads 8,150 → 2,626 pieces, 3 far sites skipped and 23 far site meshes dropped. Ground built to 2.7 km. A soft edge brakes the car past 1.8 km and eases it back |
+| Graphics ladder | `minimal` < `phone` < `low`, starts on `phone`. No AO, bloom, SMAA or shadow maps (three's `SunLight` has a fixed 2 cascades, so one cascade is not possible; a soft blob under the car instead), tone mapping kept, pixel ratio 1.25 / 1, haze ~90 % at 800 m, camera far plane 1.8 km, no river mirror, traffic density 0.35, at most 360 people, shorter tree, building and site distances |
+| Touch | Floating stick (steer; up/down pitches in the air), gas and brake pedals, handbrake, fly (hold), horn, map, camera; drag elsewhere to look. Any number of fingers. No page zoom or scroll. Keys still work |
+| Small screen | Landscape first, readable at 375×667 CSS px. Minimap top right, speed bottom centre, photo and radio chips hidden, a touch section on top of the H card under the save-code line, a close button over the big map. Portrait shows a "turn your phone" card; a tap plays on in portrait, but the HUD is cramped there |
+| Reload guard | A tab that dies within its first minute of play and comes back within 3 minutes starts one level lower, with a pill. Hiding the tab or leaving the page is not counted |
+
+Measured 2026-10-30, Chrome phone emulation, iPhone 13 landscape (750×342 CSS px), the same four camera spots:
+
+| Spot | Normal `low` | `phone` | `minimal` |
+|---|---|---|---|
+| Piața Unirii, street level | 683 draw calls | 175 | 167 |
+| Republicii, street level | 440 | 148 | 138 |
+| Cetate, 80 m up | 468 | 155 | 150 |
+| Over the centre, 300 m up | 521 | 147 | 136 |
+| Triangles | 2.7–4.5 M | 1.1–1.7 M | 1.1–1.7 M |
+
+The car is ~34 of those calls in the chase view.
+
+Memory, desktop Chrome 1280×720, `tools/oradea/memory/profile.mjs`, right after load:
+
+| | Normal `low` | `phone` |
+|---|---|---|
+| Page memory | 620 MB (269 JS + 350 arrays) | 294 MB (106 JS + 188 arrays) |
+| Peak while loading | ~910 MB | ~450 MB |
+| Chrome page process | 570 MB | 370–500 MB over four runs |
+| GPU process | 380 MB | 270–290 MB |
+
+Needs a real phone: frame rate on a mid Android and an iPhone, memory and kills in Safari Web Inspector, stick size and
+feel, fullscreen and orientation lock on Android, the notch and safe areas, the haze, the guard after a real crash, the
+save code's copy button on iOS.
+
+Left: the car's ~34 draw calls, sites merged per material (BatchedMesh), the map page's "driving is for computers"
+text, sending phones to the beta by default once tested.
+
 ## Phone limits
 
 No browser publishes a per-device tab limit.

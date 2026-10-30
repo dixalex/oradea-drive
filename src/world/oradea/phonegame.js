@@ -2,9 +2,10 @@
 //
 //   bootGuard({ levels, saved, storage = localStorage, now = Date.now() }) -> guard   the reload guard, before the city
 //     loads: reads the last boot record (BOOT_KEY), picks the start level (phone.js guardDecision; a lowered one is saved
-//     as the phone level), writes this boot's record. guard = { level, crashed, floor, setLevel(q), clean(), stable() }:
-//     setLevel keeps the record on the level in use, clean() marks a deliberate unload (pagehide), stable() drops the
-//     record once the game has run STABLE_AFTER s
+//     as the phone level), writes this boot's record. guard = { level, crashed, floor, setLevel(q), clean(), open(),
+//     stable() }: setLevel keeps the record on the level in use, clean() marks a deliberate unload or a hidden tab (pagehide,
+//     the tab in the background: a phone may discard it there, which is no crash), open() marks it live again (back in
+//     front), stable() drops the record once the game has run STABLE_AFTER s
 //   startPhone(ctx, { guard, ready }) -> { touch, pill(text, secs), dispose() }   ready: a promise (the consent card)
 //     - touch controls (ui/touch.js -> core/input.js input.touch): a stick, gas / brake pedals, handbrake, fly (hold: wings
 //       and thrust; the Roadster's jump), horn, map, camera; a look drag on the rest of the screen; keys keep working
@@ -19,7 +20,7 @@
 //     - while no shadow maps are drawn (the phone levels: render/shadows.js), a soft blob under the car; in the chase view
 //       the Cybertruck's cabin and driver (behind its dark glass) leave the main camera's layer: ~10 draw calls
 //     - the guard's pill when the last start crashed; the guard's record follows quality changes, is closed on pagehide
-//       and dropped after a minute of play
+//       and while the tab is hidden, and dropped after a minute of play
 import * as THREE from 'three';
 import { createTouchControls, touchCss } from '../../ui/touch.js';
 import { decalBias } from '../../render/renderer.js';
@@ -55,6 +56,7 @@ export function bootGuard({ levels, saved = null, storage = globalThis.localStor
     ...d,
     setLevel(q) { if (mine) { mine = { ...mine, level: q }; write(mine); } },
     clean() { if (mine) write({ ...mine, clean: true }); },
+    open() { if (mine) write(mine); },
     stable() { mine = null; write(null); },
   };
 }
@@ -249,7 +251,9 @@ export function startPhone(ctx, { guard = null, ready = Promise.resolve() } = {}
   const onQuality = (q) => guard?.setLevel(q);
   ctx.events.on('quality', onQuality);
   const onHide = () => guard?.clean();
+  const onVis = () => (doc.hidden ? guard?.clean() : guard?.open());
   globalThis.addEventListener?.('pagehide', onHide);
+  doc.addEventListener('visibilitychange', onVis);
   ready.then(() => {
     shown = true;
     if (guard?.crashed) pill(guard.floor
@@ -262,7 +266,7 @@ export function startPhone(ctx, { guard = null, ready = Promise.resolve() } = {}
     dispose() {
       touch.dispose(); close.remove(); blob.removeFromParent(); for (const m of cabin) m.layers.enable(0); pillEl.remove(); rotate.remove(); style.remove(); doc.body.classList.remove('phone');
       doc.removeEventListener('gesturestart', noGesture); doc.removeEventListener('dblclick', noGesture); doc.removeEventListener('touchmove', noMove);
-      globalThis.removeEventListener?.('pagehide', onHide);
+      globalThis.removeEventListener?.('pagehide', onHide); doc.removeEventListener('visibilitychange', onVis);
     },
   };
 }

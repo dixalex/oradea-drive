@@ -139,6 +139,10 @@ const read = (f) => readFileSync(root + f, 'utf8');
   g2.clean();
   const g3 = bootGuard({ levels: LEVELS, saved: 'phone', storage: S, now: t0 + 30e3 });
   ok(!g3.crashed && g3.level === 'phone', 'after a clean unload: no step down');
+  g3.clean(); g3.open(); // the tab hidden, then back in front
+  ok(JSON.parse(S.getItem('odphone.boot')).clean === false, 'back in front: the record is live again (a crash now still counts)');
+  g3.clean();
+  ok(!guardDecision(JSON.parse(S.getItem('odphone.boot')), t0 + 60e3).crashed, 'discarded while in the background: no step down');
   g3.stable();
   ok(S.getItem('odphone.boot') === null, 'a minute of play drops the record');
   ok(!/^(cherkasy|cd|oradea)\./.test('odphone.boot'), "the boot record is not a save-code key (savecode.js), so a code never carries it");
