@@ -1,0 +1,43 @@
+Card: the phone tier, step 2 of ORADEA-MOBILE.md (a playable phone beta behind a flag)
+
+Read first: /Users/alexandertinyaev/Sites/oradea-drive/ORADEA-MOBILE.md (the plan and the measured numbers, including the
+step 1 results), tools/oradea/research/reports/engine.md (stay on three.js; BatchedMesh for sites), ORADEA.md (how the
+Oradea build sits beside Cherkasy: `CITY?.x ?? <Cherkasy value>` in shared files, Oradea code under src/world/oradea/),
+AGENTS.md (module map, URL flags, window.tick, quality levels).
+
+Goal: a phone player can drive Oradea's centre. Today index.html sends phones to the map page (src/mapview.js). Build a
+phone game mode that loads only when asked for, so nothing changes for desktops or for phones that do not opt in:
+- `?phone` turns it on (and `?desktop&phone` on a computer, for testing). The map page gets a "Joacă (beta) / Play (beta)"
+  button that opens the game with `?desktop&phone`. Do not change the automatic phone redirect yet: real-phone tests come
+  first (the owner will test).
+- A graphics level below "low" for phones: pixel ratio <= 1.25, no AO / bloom / SMAA (keep tone mapping), one shadow
+  cascade or none, no river mirror, fewer cars and people, shorter draw distances and fog at ~800 m. Follow how the
+  existing levels are tabled per module (QUALITY_LEVELS in main.js, post.js, shadows.js, sky.js, city.js DETAIL).
+- The centre only: in phone mode load the buildings, trees, parked cars, people, traffic lanes and hand-built sites
+  within ~1.8 km of Piața Unirii (world 0,0 is near there; check), and keep the car inside that disc (a soft boundary).
+  Measure the memory and the draw calls before and after with tools/oradea/memory/profile.mjs (it takes `--query`).
+- Touch controls: a steer pad and pedals (or a joystick), buttons for handbrake, horn, fly (hold for wings / thrust),
+  map (M), camera; landscape first, readable at 375 x 667 CSS px and up; multi-touch; no page scroll or zoom; the HUD
+  trimmed for small screens. Keys still work. The game reads input through src/core/input.js: extend it, do not fork it.
+- A guard: if the tab reloads itself within a minute of starting (a crash on iOS shows as a reload), start one quality
+  step lower and say so in a small pill.
+Keep every shared-file change small and CITY- or flag-guarded, so the Cherkasy build and tests are unchanged; list each
+shared file you touched in ORADEA.md's shared-files paragraph. Phone-only code goes in new files (e.g. src/ui/touch.js,
+src/world/oradea/phone.js).
+
+Checks: tests for the pure parts (the centre filter, the quality table, the reload guard, touch input mapping) in
+tests/oradea-phone*.test.mjs; the full test suite passes; screenshots with Playwright's phone emulation (iPhone 13
+landscape and a mid Android) through the shot tool, which takes --size and --query; a memory profile of phone mode vs
+the normal low level, and the draw-call count at a few spots in the centre (renderer.info.render.calls).
+
+Rules for this run: work in your own git worktree on a new branch from `oradea` (git worktree add); run your own dev
+server there on a free port 5182-5189 (VITE_CITY=oradea npx vite --port <p> --strictPort --host 127.0.0.1) and stop it
+when done; screenshots and profiles only through
+/private/tmp/claude-501/-Users-alexandertinyaev-Sites-oradea-drive/39090392-b810-46f1-95c8-0622a60f1534/scratchpad/shot/
+(shot.mjs, profile.mjs: playwright is installed there; a machine-wide lock, one browser at a time). The owner works on
+this Mac in parallel: no subagents, one test / browser / heavy command at a time, run the full suite with `nice`. Commit
+on your branch as you go (no Co-Authored-By or other attribution lines); do not merge, push or deploy. Use en-dashes
+(–), never em-dashes; UI text in Romanian and English through src/i18n.js t() or ui.js like the rest of Oradea.
+
+Report (compact): what works, the branch and commits, memory and draw calls before / after, screenshot paths, what needs
+a real phone to judge, and what is left of step 2.
