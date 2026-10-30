@@ -440,7 +440,7 @@ export function createHud({ player, world, camera, container = globalThis.docume
       if (sub) { const sm = doc.createElement('small'); sm.textContent = sub; el.banner.appendChild(sm); }
       el.banner.style.color = color; el.banner.classList.add('on'); banT = 3.2;
     },
-    setMoney(n) { setText(el.moneyV, Math.round(n).toLocaleString('uk-UA')); setClass(el.money, 'debt', n < 0); },
+    setMoney(n) { setText(el.moneyV, Math.round(n).toLocaleString(CITY?.locale ?? 'uk-UA')); setClass(el.money, 'debt', n < 0); },
     flashMoney() { moneyFlip = !moneyFlip; el.money.classList.remove('fineA', 'fineB'); el.money.classList.add(moneyFlip ? 'fineA' : 'fineB'); },
     setHint(t) { setClass(el.hint, 'on', !!t); if (t) setText(el.hint, t); },
   };

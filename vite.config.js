@@ -1,6 +1,7 @@
 // Vite config for the fork's city builds. Without VITE_CITY it is Vite's defaults (the upstream Cherkasy game).
 // With VITE_CITY=oradea:
-//   - index.html gets the Oradea title, description and share card, and no Ukrainian loading text; ?phone opens the game
+//   - index.html gets the Oradea title, description, icons and share card (public/assets/oradea/og.jpg, a game shot of
+//     the Moon Church and the City Hall tower), and no Ukrainian loading text; ?phone opens the game
 //     (its phone tier) on a phone instead of the map page, and a touch screen's start card leaves out the keyboard keys;
 //   - a small stylesheet turns the bot chip and the big map's bot link into the WhatsApp feedback chat (config.feedback;
 //     bot/ belongs to the Cherkasy game) and hides the other bot links, and an RO / EN switch (src/i18n.js reads the
@@ -16,13 +17,29 @@ import { wrapStrings, SKIP } from './tools/oradea/strings.mjs';
 
 const CITY = process.env.VITE_CITY || '';
 
+// the share card's absolute URLs (og:image must be one; the workers.dev copy points here as its canonical)
+const SITE = 'https://oradea.drumulvietii.ro';
 const ORADEA_HEAD = `<title>Oradea Drive</title>
   <meta name="google" content="notranslate">
-  <meta name="description" content="Drive and fly through the real city of Oradea, in your browser. / Condu și zboară prin Oradea, direct în browser.">
+  <meta name="description" content="Condu și zboară prin Oradea reală, direct în browser. / Drive and fly through the real city of Oradea, in your browser.">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Oradea Drive">
   <meta property="og:title" content="Oradea Drive">
-  <meta property="og:description" content="Drive and fly through the real city of Oradea, in your browser.">
+  <meta property="og:description" content="Condu și zboară prin Oradea reală, direct în browser. / Drive and fly through the real city of Oradea, in your browser.">
+  <meta property="og:locale" content="ro_RO">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:url" content="${SITE}/">
+  <meta property="og:image" content="${SITE}/assets/oradea/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Mașina din joc în fața Bisericii cu Lună și a turnului Primăriei din Oradea, la apus">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="${SITE}/">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
   <style>.hud-help .bot { display: none !important; }
     .pc-own, .bm-ctx a { color: #7ee2a8 !important; }
     /* the news chip stays in the HUD's chip chain (hud.js places each after the previous) at zero width */
@@ -32,7 +49,10 @@ const ORADEA_HEAD = `<title>Oradea Drive</title>
     .hud-botkey:not(.hud-newskey) i::before { content: 'I'; font-size: 11px; font-weight: 700; color: #fff; }
     .hud-botkey:not(.hud-newskey):hover { border-color: rgba(37, 211, 102, .9) !important; }
     .bm-legend .bm-bot { background: rgba(26, 160, 80, .9) !important; } .bm-legend .bm-bot:hover { background: #25d366 !important; }
-    #lang { position: fixed; top: 8px; right: 8px; z-index: 50; display: flex; border-radius: 6px; overflow: hidden; font: 600 11px system-ui, sans-serif; opacity: .8; }
+    /* money as Romanians write it: 12.345 lei (hud.js formats with CITY.locale) */
+    .hud-money { display: flex; flex-direction: row-reverse; } .hud-money b { margin: 0 0 0 6px !important; }
+    /* left of the money (top right): over it, the switch hid the money's digits */
+    #lang { position: fixed; top: calc(2.4vh + 6px); right: calc(2.4vw + 170px); z-index: 50; display: flex; border-radius: 6px; overflow: hidden; font: 600 11px system-ui, sans-serif; opacity: .8; }
     #lang button { border: 0; padding: 3px 7px; background: #0d1117cc; color: #9aa4b2; cursor: pointer; }
     #lang button.on { background: #f2c14e; color: #111; }
     /* a touch screen (the phone beta): the start card's keyboard keys only pushed the terms below the fold */
@@ -63,7 +83,7 @@ function oradeaPage() {
         .replace('<div class="title">Черкаси Драйв</div>', '<div class="title">Oradea Drive</div>')
         .replace('<div class="msg">Завантаження…</div>', '<div class="msg">…</div>')
         .replace('<div id="app"></div>', `<div id="app"></div>\n  ${LANG_SWITCH}`)
-        .replace("'Не вдалося запустити гру: '", "(/^ro/i.test(navigator.language) ? 'Jocul nu a pornit: ' : 'The game failed to start: ')")
+        .replace("'Не вдалося запустити гру: '", "(/^ro/i.test(document.documentElement.lang) ? 'Jocul nu a pornit: ' : 'The game failed to start: ')") // the RO / EN switch set the page's lang
         // ?phone (the phone beta, src/world/oradea/phonegame.js) opens the game on a phone too, not the map page
         .replace('const q = new URLSearchParams(location.search), mm = ', "const q = new URLSearchParams(location.search); if (q.has('phone')) q.set('desktop', ''); const mm = "),
     },

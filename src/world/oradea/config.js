@@ -37,6 +37,7 @@ export default {
   name: 'Oradea Drive',
   assets: 'assets/oradea/',
   feedback: 'https://wa.me/40741849122',
+  locale: 'ro-RO', // numbers (the HUD's money: 12.345)
   photo: { file: 'oradea-drive', a: 'oradea.', b: 'drumulvietii.ro', sub: 'ORADEA DRIVE' }, // ui/photomode.js: the photo's wordmark and file name
   source: 'https://github.com/dixalex/oradea-drive/tree/oradea',
   help: [[t('Idei, cereri, parteneri', 'Ideas, requests, partners'), [['I', t('WhatsApp: o idee, o greșeală sau ceva ce vrei în joc (școala ta, biserica, firma, o clădire)',

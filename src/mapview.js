@@ -57,6 +57,7 @@ export async function startMapView({ container = document.body } = {}) {
     const href = '?desktop&phone';
     const play = Object.assign(document.createElement('a'), { className: 'mv-play', href, textContent: `🚗 ${CITY.phone.play}` });
     $('.mv-row').prepend(play);
+    $('.mv-anyway')?.remove(); // the beta replaces 'try the game anyway': the whole city peaks near 1 GB on a phone
     $('.mv-pill').after(Object.assign(document.createElement('a'), { className: 'mv-pill mv-pill-play', href, textContent: `🚗 ${CITY.phone.play}` }));
   }
   $('.mv-pill').onclick = () => show(true);
