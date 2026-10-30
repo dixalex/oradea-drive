@@ -40,6 +40,7 @@ updates merge cleanly. Oradea lives beside them, and one switch picks the city:
 | `src/world/oradea/river.js` | the Crișul Repede: banks lifted to 3.2 m quays at load (the shared 16 m terrain lattice sank them under the water), and decks for the OSM bridges over it, with walks, railings and piers (`tests/oradea-river.test.mjs`) |
 | `src/world/oradea/places.js` | sights for the maps and the explore quest (finding all unlocks the Roadster); a site's own squares go here too, not in its `SITE.places`, so the phone map, which loads no site, lists them |
 | `src/world/oradea/quests.js` | «Secretele Oradiei», the quest book's quest (K): 21 sourced cards from `tools/oradea/research/reports/quests.md`; `HELD` keeps the two Jewish-history cards out until the community reads them (`tests/oradea-quests.test.mjs`) |
+| `src/world/oradea/savecode.js` | the save code: a line in the controls card (H) copies all progress as one text code and takes one back, since Safari deletes a site's storage after 7 days without a visit (`tests/oradea-savecode.test.mjs`) |
 | `src/world/oradea/ui.js`, `tr.js`, `src/i18n.js` | Romanian / English for upstream's Ukrainian UI: a build pass wraps each string in `__tr()` |
 | `src/world/oradea/vehicles.js`, `signs.js` | Romanian plates, bus boards, truck sides, ads and shop signs |
 | `public/assets/oradea/radio/tracks.json` | the car radio's live Oradea stations |
