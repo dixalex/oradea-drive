@@ -55,7 +55,9 @@ const CSS = `
 .savecode-box .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
 .savecode-box button { padding: 7px 14px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, .2); background: #283247; color: #fff; font: 600 13px system-ui, sans-serif; cursor: pointer; }
 .savecode-box button.go { background: #2f6f4e; }
-.savecode-box .err { color: #ff8a7a; min-height: 1.4em; margin: 6px 0 0; }`;
+.savecode-box .err { color: #ff8a7a; min-height: 1.4em; margin: 6px 0 0; }
+.hud-help .savecode { margin: 0 0 10px; padding: 0 0 8px; border-bottom: 1px solid rgba(255, 255, 255, .1); color: #c9d3e4; line-height: 1.45; }
+.hud-help .savecode a { color: #6cc4f5; font-weight: 700; text-decoration: none; pointer-events: auto; cursor: pointer; }`;
 
 export function installSaveCode({ storage = globalThis.localStorage, doc = globalThis.document } = {}) {
   if (!doc || !storage) return () => {};
@@ -96,7 +98,7 @@ export function installSaveCode({ storage = globalThis.localStorage, doc = globa
     if (!help) { if (++tries < 600) return; clearInterval(timer); return; } // the HUD never came up (a load error)
     clearInterval(timer);
     doc.head.append(Object.assign(doc.createElement('style'), { textContent: CSS }));
-    line = Object.assign(doc.createElement('p'), { className: 'bot savecode' });
+    line = Object.assign(doc.createElement('p'), { className: 'savecode' }); // not .bot: the Oradea page hides that (vite.config.js)
     line.innerHTML = `💾 ${t('Progresul tău stă doar în acest browser, iar Safari îl șterge după 7 zile fără vizită.', 'Your progress lives only in this browser, and Safari deletes it after 7 days without a visit.')}
       <a href="#" data-sc="copy">${t('Copiază codul de salvare', 'Copy the save code')}</a> · <a href="#" data-sc="paste">${t('Introdu un cod', 'Enter a code')}</a>`;
     line.addEventListener('click', (e) => {
@@ -104,7 +106,8 @@ export function installSaveCode({ storage = globalThis.localStorage, doc = globa
       e.preventDefault();
       if (sc === 'copy') copy(e.target); else open('paste');
     });
-    help.append(line);
+    const cols = help.querySelector('.cols'); // at the top: the card scrolls, and the line matters before progress is lost
+    if (cols) cols.before(line); else help.append(line);
   };
   const timer = setInterval(add, 500);
   return () => { clearInterval(timer); close(); line?.remove(); };
