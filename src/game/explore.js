@@ -5,7 +5,8 @@
 // left places.js stay stored (harmless) but do not count.
 // Each tracked place gets p.visited = true | false, which the maps read (mapdraw.js: a nameless "?" and a grey
 // footprint with a dashed outline until visited, then its emoji, a check and the gold footprint – a visit repaints it
-// through hud.painter.refresh); places without the flag (the phone map) draw as before.
+// through hud.painter.refresh); places without the flag (the phone map) draw as before. A place with `away: true` (out of
+// reach where the player is, e.g. outside the Oradea phone tier's centre) is not tracked, so the total stays reachable.
 //   createExplore({ world, player, hud?, reward?(n) (money for a new sight), storage? (localStorage) })
 //     -> { update(dt), visit(id) (debug), reset() (debug), visited: n, total: n, list: [place] }
 //   reachOf(place) -> metres (pure: the footprint's radius around its anchor + 40, at least 60)
@@ -23,7 +24,8 @@ export function reachOf(p) {
 }
 
 export function createExplore({ world, player, hud = null, reward = null, storage = globalThis.localStorage }) {
-  const list = (world?.places || []).filter((q) => q.kind === 'sight' && Number.isFinite(q.x) && Number.isFinite(q.z));
+  // `away`: a sight the player cannot reach here (the phone tier's centre leaves it out), so it does not count
+  const list = (world?.places || []).filter((q) => q.kind === 'sight' && !q.away && Number.isFinite(q.x) && Number.isFinite(q.z));
   const reach = new Map(list.map((q) => [q, reachOf(q)]));
   let saved = {};
   try { saved = JSON.parse(storage?.getItem(KEY) || 'null') || {}; } catch { /* storage off or a bad record */ }

@@ -150,6 +150,7 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
   if (phone) {
     const byId = new Map(map.buildings.map((b) => [b.id, b]));
     phonePlaces = guard('places', () => resolvePlaces(map, geo, [...PLACES, ...handBuilt.flatMap((S) => S.places ?? [])]), []);
+    for (const q of phonePlaces) if (Number.isFinite(q.x) && !inDisc(q.x, q.z, phone)) q.away = true; // on the map, out of reach: the explore quest skips them
     const out = handBuilt.filter((S) => !siteInCentre(S, byId, geo, phone));
     for (const S of out) handBuilt.splice(handBuilt.indexOf(S), 1);
     phoneClip = clipToCentre(map, phone);

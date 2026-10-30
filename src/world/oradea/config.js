@@ -38,6 +38,7 @@ export default {
   assets: 'assets/oradea/',
   feedback: 'https://wa.me/40741849122',
   locale: 'ro-RO', // numbers (the HUD's money: 12.345)
+  roadsterNewsAfter: 3, // main.js: the second car's news card waits until a player has found 3 sights (a later start)
   photo: { file: 'oradea-drive', a: 'oradea.', b: 'drumulvietii.ro', sub: 'ORADEA DRIVE' }, // ui/photomode.js: the photo's wordmark and file name
   source: 'https://github.com/dixalex/oradea-drive/tree/oradea',
   help: [[t('Idei, cereri, parteneri', 'Ideas, requests, partners'), [['I', t('WhatsApp: o idee, o greșeală sau ceva ce vrei în joc (școala ta, biserica, firma, o clădire)',
@@ -78,6 +79,7 @@ export default {
   places: PLACES,
   peek: PEEK,
   quests: [SECRETE],
+  missionPlaces: true, // game/missions.js: taxi / courier / chase destinations are the city's own places (clean RO / EN names)
   missionsOff: ['mugging'], // a family and church audience: no running people down (game/missions.js)
   logos: { everlabs: 'oradea-plate' }, logoColours: ['everlabs'],
   vehicleAtlas,

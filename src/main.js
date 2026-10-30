@@ -15,7 +15,7 @@
 //     P (or the HUD's camera chip) opens the photo mode (ui/photomode.js: ctx.frozen, a free camera, the HUD hidden,
 //     a watermarked PNG to save or share); not over the map, the quest book or the Roadster's news card.
 //     V switches the car (game/garage.js: the Roadster once every sight is found; ?roadster unlocks it in dev builds
-//     only); the Roadster's one-time news card (ui/roadsternews.js) follows the consent card. M opens the city map
+//     only); the Roadster's one-time news card (ui/roadsternews.js) follows the consent card (CITY.roadsterNewsAfter: not before that many sights). M opens the city map
 //     (hud.map) and K the quest book (game/quests.js); either pauses the game until it closes. The loading screen carries the consent card (ui/consent.js): the
 //     loop starts once it is accepted, at once for a returning player. window.__game = ctx;
 //     window.tick(n, dt = 1/60) steps n fixed frames with the real-time loop paused (ctx.start() resumes). ?paused
@@ -377,7 +377,10 @@ export async function startGame({ container = document.getElementById('app') || 
     overlay?.classList.add('done');
     setTimeout(() => overlay?.remove(), 700);
     // the Roadster's news, once (any key closes it; V there switches at once when it is earned)
-    news = showRoadsterNews({ visited: explore.visited, total: explore.total, unlocked: garage.unlocked, onSwitch: () => { if (garage.kind !== 'roadster') garage.toggle(); } });
+    // a city may hold it back until the player has found a few sights (CITY.roadsterNewsAfter): a brand-new player's
+    // first screen should be the city, not a car they cannot have yet
+    if (explore.visited >= (CITY_CFG?.roadsterNewsAfter ?? 0) || garage.unlocked)
+      news = showRoadsterNews({ visited: explore.visited, total: explore.total, unlocked: garage.unlocked, onSwitch: () => { if (garage.kind !== 'roadster') garage.toggle(); } });
   });
   if (typeof window !== 'undefined') {
     window.__game = ctx;

@@ -9,6 +9,7 @@ import {
   inDisc, cutLine, clipToCentre, anchorsOf, siteInCentre, outsideMeshes, guardDecision, boundary,
 } from '../src/world/oradea/phone.js';
 import { bootGuard, touchTips } from '../src/world/oradea/phonegame.js';
+import { createExplore } from '../src/game/explore.js';
 import { stickAxes } from '../src/ui/touch.js';
 import { createInput } from '../src/core/input.js';
 import { createShadows } from '../src/render/shadows.js';
@@ -208,5 +209,12 @@ ok(touchTips('Hold Shift – wings and thrust') === 'Hold ✈ – wings and thru
 ok(touchTips('Shift: hover · W: thrust · S: brake') === '✈: hover · ▲: thrust · ▼: brake', 'touchTips: W / S are the pedals');
 ok(touchTips('Shift', true) === '✈' && touchTips('S', true) === '▼' && touchTips('M', true) === 'M', 'touchTips: a <kbd> alone');
 ok(touchTips('Spitalul Shiftar · Strada S. Wesselényi') === 'Spitalul Shiftar · Strada S. Wesselényi', 'touchTips: leaves names and plain words alone');
+// the explore quest on a phone counts only the sights inside the centre (city.js marks the rest `away`)
+{
+  const mem = new Map(), storage = { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
+  const places = [{ id: 'a', kind: 'sight', x: 0, z: 0 }, { id: 'b', kind: 'sight', x: 3000, z: 0, away: true }, { id: 'c', kind: 'improved', x: 5, z: 5 }];
+  const ex = createExplore({ world: { places }, player: { position: { x: 0, y: 0, z: 0 } }, storage });
+  ok(ex.total === 1, `explore: ${ex.total} sight counted (the away one skipped)`);
+}
 console.log(fails ? `\n${fails} FAILED` : '\nall passed');
 process.exit(fails ? 1 : 0);

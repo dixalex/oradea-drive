@@ -174,6 +174,21 @@ export function createMissions({ world, player, hud = null, scene, input = null 
     return null;
   };
   const DEST = /amenity.{0,4}(theatre|fountain|place_of_worship|college|planetarium|community)|tourism.{0,4}(attraction|artwork)|historic/;
+  // a city's own places as destinations (CITY.missionPlaces, Oradea: its sights, rebuilt buildings and partners have clean
+  // RO / EN names, where OSM's named points include artworks named after people and English-only tags); `away` ones (out
+  // of the phone tier's reach) are skipped; none at the right distance: OSM's, as before
+  let OWN = null;
+  const placeDest = (rMin, rMax) => {
+    OWN ??= CITY?.missionPlaces ? (W.places || []).filter((q) => q.name && q.name.length < 64 && !q.away && Number.isFinite(q.x) && Number.isFinite(q.z)) : [];
+    const p0 = P();
+    for (let t = 0; t < 40 && OWN.length; t++) {
+      const q = OWN[Math.floor(Math.random() * OWN.length)], d = Math.hypot(q.x - p0.x, q.z - p0.z);
+      if (d < rMin || d > rMax) continue;
+      const rp = nearestRoad(q.x, q.z, 70); if (!rp) continue;
+      return { ...rp, name: q.name };
+    }
+    return placeNamed(DEST, rMin, rMax);
+  };
   const roofSpot = (rMin, rMax) => {
     const B = map?.buildings || [], p0 = P();
     for (let t = 0; t < 400 && B.length; t++) {
@@ -465,7 +480,7 @@ export function createMissions({ world, player, hud = null, scene, input = null 
         victim.hry = Math.atan2(P().x - victim.x, P().z - victim.z);
         if (Math.hypot(P().x - victim.x, P().z - victim.z) < 8 && speed() < 2.5) {
           pd?.removeActor(victim); m.protect = []; o.taken = true;
-          m.dest = placeNamed(/police/, 0, 1e9) || placeNamed(DEST, 300, 1500);
+          m.dest = placeNamed(/police/, 0, 1e9) || placeDest(300, 1500);
           if (!m.dest) return end(true, 'Потерпілий у безпеці', 250 + m.caught * 100, 0, 'mugging_delivered');
           m.stage = 'drive'; m.t = Math.hypot(m.dest.x - P().x, m.dest.z - P().z) / 11 + 40; m.hp = 1;
           m.b = beacon(TYPES.mugging.color, 5); m.b.g.position.set(m.dest.x, gh(m.dest.x, m.dest.z), m.dest.z);
@@ -523,7 +538,7 @@ export function createMissions({ world, player, hud = null, scene, input = null 
 
   const startCourier = (o) => {
     const roof = Math.random() < 0.5 ? roofSpot(350, 1100) : null;
-    const dest = roof ? { ...roof, name: 'на дах будинку' } : placeNamed(DEST, 400, 1500);
+    const dest = roof ? { ...roof, name: 'на дах будинку' } : placeDest(400, 1500);
     if (!dest) return null;
     begin('courier', roof ? "Кур'єр: доставка на дах" : "Кур'єр", roof ? 'courier_roof_destination' : 'courier_picked_up');
     if (o.parcel) { scene.remove(o.parcel); o.parcel = null; }
@@ -548,7 +563,7 @@ export function createMissions({ world, player, hud = null, scene, input = null 
   };
 
   const startTaxi = (o) => {
-    const dest = placeNamed(DEST, 350, 1400); if (!dest) return null;
+    const dest = placeDest(350, 1400); if (!dest) return null;
     begin('taxi');
     const pd = peds(), fare = o.fare;
     const m = { stage: 'pickup', t: 40, mood: 1, flew: false, protect: [fare], protectMsg: 'Ти збив пасажира', protectFine: 350, protectVo: 'taxi_failed_passenger_hit' };

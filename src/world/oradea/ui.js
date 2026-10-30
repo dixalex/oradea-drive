@@ -163,9 +163,9 @@ export const UI = {
   "узвіз": ["drumul", "drumul"],
   "проїзд": ["intrarea", "intrarea"],
   // game/quests.js
-  "Квести: обрати й шукати таємниці міста (K)": ["Misiuni secrete: alege și caută tainele orașului (K)", "Quests: pick one and hunt the city's secrets (K)"],
+  "Квести: обрати й шукати таємниці міста (K)": ["Secrete: alege o căutare și găsește tainele orașului (K)", "Quests: pick one and hunt the city's secrets (K)"],
   "карток": ["cartonașe", "cards"],
-  "Квести": ["Quest-uri", "Quests"],
+  "Квести": ["Secrete", "Quests"],
   "Десь поруч таємниця №": ["Pe aproape e taina nr.", "Somewhere near: secret no."],
   "· шукай сіре світло": ["· caută lumina gri", "· look for the grey light"],
   "Закрити": ["Închide", "Close"],
