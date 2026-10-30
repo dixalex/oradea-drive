@@ -89,6 +89,9 @@ const read = (f) => readFileSync(root + f, 'utf8');
 {
   ok(LEVELS[0] === 'minimal' && LEVELS.includes(START) && LEVELS.at(-1) === 'low', `the phone ladder, lowest first: ${LEVELS.join(' < ')}`);
   ok(CONFIG.phone.levels === LEVELS && CONFIG.phone.start === START && /beta/i.test(CONFIG.phone.play), 'config.js carries the ladder and the map page button');
+  // the build moves index.html's inline script into the bundle; only a 'pre' hook still edits it (the ?phone redirect)
+  ok(/transformIndexHtml:\s*\{\s*order:\s*'pre'/.test(read('vite.config.js')) && read('index.html').includes('const q = new URLSearchParams(location.search), mm = '),
+    'vite.config.js edits index.html before the build bundles its script, and the line it edits is still there');
   const table = (file, name) => { const s = read(file), i = s.indexOf(name), j = s.indexOf('};', i); return s.slice(i, j); };
   const post = table('src/render/post.js', 'const QUALITY = {'), sky = table('src/render/sky.js', 'const Q = {'), detail = table('src/world/oradea/city.js', 'const DETAIL = {');
   for (const q of ['phone', 'minimal']) {

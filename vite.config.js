@@ -52,8 +52,9 @@ function oradeaPage() {
   return {
     name: 'oradea-page',
     configResolved(c) { outDir = resolve(c.root, c.build.outDir); },
-    transformIndexHtml(html) {
-      return html
+    // 'pre': before Vite moves index.html's inline module script into the bundle; later, the build left the two edits
+    // inside that script (the error text, ?phone) undone
+    transformIndexHtml: { order: 'pre', handler: (html) => html
         .replace('<html lang="uk">', '<html lang="ro" translate="no">') // the game has its own RO / EN: no browser auto-translate
         // the head from <title> to the share card's last line
         .replace(/<title>[\s\S]*?<meta name="twitter:card" content="summary_large_image">/, ORADEA_HEAD)
@@ -62,7 +63,7 @@ function oradeaPage() {
         .replace('<div id="app"></div>', `<div id="app"></div>\n  ${LANG_SWITCH}`)
         .replace("'Не вдалося запустити гру: '", "(/^ro/i.test(navigator.language) ? 'Jocul nu a pornit: ' : 'The game failed to start: ')")
         // ?phone (the phone beta, src/world/oradea/phonegame.js) opens the game on a phone too, not the map page
-        .replace('const q = new URLSearchParams(location.search), mm = ', "const q = new URLSearchParams(location.search); if (q.has('phone')) q.set('desktop', ''); const mm = ");
+        .replace('const q = new URLSearchParams(location.search), mm = ', "const q = new URLSearchParams(location.search); if (q.has('phone')) q.set('desktop', ''); const mm = "),
     },
     closeBundle() {
       for (const p of ['assets/cherkasy', 'assets/radio', 'assets/brand/tors.svg', 'assets/brand/urban.svg', 'assets/brand/uspace.svg',
