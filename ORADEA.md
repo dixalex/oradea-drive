@@ -112,3 +112,17 @@ links, his radio songs, the Ukrainian voice lines, the Cherkasy map data and the
 - Data credits (OSM, Microsoft via Overture, Meta + WRI CHMv2, Copernicus Land Monitoring Service Urban Atlas 2021) are on
   the start card (`ui.js`); keep them if it changes.
 - Don't use GlobalBuildingAtlas heights in the map: they are CC BY-NC 4.0, which clashes with the map's ODbL.
+
+## Event counter (ready, off)
+
+The game can count anonymous events (game starts, phone or desktop, sights found, partner sites opened, missions) without
+cookies or ids: src/analytics.js sends a small beacon to the Worker's `POST /e` (worker/oradea.js), which writes a data
+point to Workers Analytics Engine. To turn it on:
+1. Cloudflare dashboard -> Workers & Pages -> Analytics Engine -> enable (once per account).
+2. Uncomment `analytics_engine_datasets` in wrangler.jsonc and `events` in src/world/oradea/config.js.
+3. In src/world/oradea/ui.js, the start card's privacy line: "pe server numărăm doar evenimente anonime din joc (fără
+   cookie-uri, nimic care să te identifice)" / "the server only counts anonymous game events (no cookies, nothing that
+   identifies you)".
+4. Deploy. Read the counts with `CF_ACCOUNT_ID=… CF_EVENTS_TOKEN=… node tools/oradea/events.mjs --days 7` (a token with
+   Account Analytics: Read).
+
