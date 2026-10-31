@@ -42,6 +42,7 @@ const ALONG_IN = 1.0;             // a corridor beside a surface road may narrow
 const STEP = 5;                   // way segments are cut to at most this (m)
 const PAR = 1.0, PAR_T = 0.3;     // parapet over the street, its thickness
 const WALL_MIN = 0.3;             // shallower than this an edge is only a kerb
+const SEAL_DROP = 0.7;            // the seal guards an edge that drops more than this (a car falls further than its kerb step)
 const CELL = 16;
 const TRAFFIC = /^(primary|secondary|tertiary|residential|unclassified|living_street)(_link)?$/; // the classes npc/lanes.js drives
 const C = { wall: '#b7b3a9', wallDark: '#9d998f', cap: '#cfcbc1', soffit: '#77756f', lamp: '#fff4dc', rail: '#4d5358' };
@@ -529,7 +530,7 @@ export function buildGroup(base, st) {
   const surf = (x, z) => fin(st.surfaceAt(x, z)); // the street (the lattice, lifted)
   const group = Object.assign(new THREE.Group(), { name: `passage-${st.G.id}` });
   root.add(group);
-  const stats = { cut: 0, walls: 0, headwalls: 0, kerbs: 0, slab: 0, colliders: 0, lamps: 0 };
+  const stats = { cut: 0, walls: 0, headwalls: 0, kerbs: 0, seals: 0, slab: 0, colliders: 0, lamps: 0 };
   const lerp = lerpXZ;
 
   // ---- the ground in the open cuts and the paint over them go; the floor and its paint are drawn here
@@ -595,6 +596,7 @@ export function buildGroup(base, st) {
   const det = new MB(), col = (c, part = DP.CONC) => det.setColor(c).setPart(part);
   const SUB = 1.0;
   const runs = []; // [{ kind, pts: [[x, z]..], nrm: [x, z] (into the piece), piece }]
+  const mine = []; // this group's wall boxes [cx, cz, hx, hz, ang, lo, hi], for the seal below
   for (const p of pieces) {
     const n = p.pts.length;
     for (let e = 0; e < n; e++) {
@@ -657,25 +659,86 @@ export function buildGroup(base, st) {
         stats.headwalls++;
       }
     }
-    // colliders: one oriented box per stretch of <= 8 m
+    // colliders: one oriented box per stretch of <= 8 m. A retaining wall's stretch covers the segments drawn as a wall
+    // (either end deeper than WALL_MIN) and stops at a kerb: one shallow sample used to drop the whole 8 m box, which
+    // left the street open over drops of up to 4.5 m (Magheru, Parcul Traian)
+    const walled = (x, z) => kind !== 'retain' || surf(x - inx * 0.2, z - inz * 0.2) - fOf(piece, x, z) >= WALL_MIN;
     const total = [];
-    let acc = [pts[0]], len = 0;
-    for (let k = 1; k < pts.length; k++) { len += Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1]); acc.push(pts[k]); if (len >= 8 || k === pts.length - 1) { total.push(acc); acc = [pts[k]]; len = 0; } }
+    let acc = null, len = 0;
+    for (let k = 1; k < pts.length; k++) {
+      const a = pts[k - 1], b = pts[k];
+      if (!walled(...a) && !walled(...b)) { if (acc) total.push(acc); acc = null; continue; }
+      if (!acc) { acc = [a]; len = 0; }
+      len += Math.hypot(b[0] - a[0], b[1] - a[1]); acc.push(b);
+      if (len >= 8) { total.push(acc); acc = null; }
+    }
+    if (acc) total.push(acc);
     for (const seg of total) {
       const [ax, az] = seg[0], [bx, bz] = seg[seg.length - 1], L = Math.hypot(bx - ax, bz - az);
       if (L < 0.2) continue;
       let lo = Infinity, hi = -Infinity;
       for (const [x, z] of seg) {
         const f = fOf(piece, x, z), s = surf(x - inx * 0.2, z - inz * 0.2);
-        if (kind === 'retain') { if (s - f < WALL_MIN) { lo = Infinity; break; } lo = Math.min(lo, f - 0.5); hi = Math.max(hi, s + PAR); }
+        if (kind === 'retain') { if (s - f < WALL_MIN) continue; lo = Math.min(lo, f - 0.5); hi = Math.max(hi, s + PAR); }
         else if (kind === 'step') { lo = Math.min(lo, f - 0.5); hi = Math.max(hi, (openAt(x - inx * 0.3, z - inz * 0.3) || f) + PAR); }
         else if (kind === 'tunnel') { lo = Math.min(lo, f - 0.5); hi = Math.max(hi, f + cOf(piece, x, z)); }
         else if (kind === 'head') { lo = Math.min(lo, f + cOf(piece, x, z)); hi = Math.max(hi, surf(x, z) + PAR); }
       }
       if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= lo) continue;
       const t = kind === 'head' ? PAR_T : 0.3, sg = kind === 'head' ? 1 : -1; // the box lies outside the piece (inside, for a headwall's lintel)
-      const cx = (ax + bx) / 2 + sg * inx * t / 2, cz = (az + bz) / 2 + sg * inz * t / 2;
-      if (S?.obox) { S.obox(cx, cz, L / 2 + 0.05, t / 2, Math.atan2(bz - az, bx - ax), lo, hi, kind === 'head' ? 'bridge' : 'wall'); stats.colliders++; }
+      const cx = (ax + bx) / 2 + sg * inx * t / 2, cz = (az + bz) / 2 + sg * inz * t / 2, ang = Math.atan2(bz - az, bx - ax);
+      mine.push([cx, cz, L / 2 + 0.05, t / 2, ang, lo, hi]);
+      if (S?.obox) { S.obox(cx, cz, L / 2 + 0.05, t / 2, ang, lo, hi, kind === 'head' ? 'bridge' : 'wall'); stats.colliders++; }
+    }
+  }
+
+  // ---- the seal: an open cut's edge that drops over SEAL_DROP from the street (or from the slab over a tunnel) and that
+  // no wall above guards at a car's height gets a parapet wall and its collider. The runs miss corners where the street,
+  // a covered piece and the cut meet: a car could drop 4.7 m there (Gojdu, Decebal, Cantemir; tests/oradea-passages)
+  const crosses = (ax, az, bx, bz, y) => mine.some(([cx, cz, hx, hz, ang, lo, hi]) => { // segment a-b vs a box, at height y
+    if (y < lo || y > hi || Math.abs(ax - cx) + Math.abs(az - cz) > hx + hz + 4) return false;
+    const c = Math.cos(ang), s = Math.sin(ang), px = (ax - cx) * c + (az - cz) * s, pz = -(ax - cx) * s + (az - cz) * c;
+    const dx = (bx - cx) * c + (bz - cz) * s - px, dz = -(bx - cx) * s + (bz - cz) * c - pz;
+    let t0 = 0, t1 = 1;
+    for (const [p, q] of [[-dx, px + hx], [dx, hx - px], [-dz, pz + hz], [dz, hz - pz]]) { // Liang–Barsky
+      if (p === 0) { if (q < 0) return false; continue; }
+      const r = q / p;
+      if (p < 0) { if (r > t1) return false; if (r > t0) t0 = r; } else { if (r < t0) return false; if (r < t1) t1 = r; }
+    }
+    return true;
+  });
+  for (const p of open) {
+    const n = p.pts.length;
+    for (let e = 0; e < n; e++) {
+      const [ax, az] = p.pts[e], [bx, bz] = p.pts[(e + 1) % n], L = Math.hypot(bx - ax, bz - az);
+      if (L < 0.3) continue;
+      const ux = (bx - ax) / L, uz = (bz - az) / L, inx = -uz, inz = ux, m = Math.max(1, Math.round(L / 0.5));
+      const need = []; // per sample: null, or { s, f, top, lo }
+      for (let j = 0; j <= m; j++) {
+        const s = (j / m) * L, x = ax + ux * s, z = az + uz * s, ox = x - inx * 0.3, oz = z - inz * 0.3;
+        if (openAt(ox, oz) !== Infinity || openAt(x + inx * 0.3, z + inz * 0.3) === Infinity) { need.push(null); continue; } // between two cuts, or not an edge of the cut
+        const f = fOf(p, x, z), top = surf(ox, oz);
+        // over a tunnel the wall starts above its ceiling (the slab is ~1 m deep), and a tunnel mouth stays open
+        const lo = coveredAt(ox, oz) !== Infinity ? top - 0.5 : f - 0.5;
+        if (!(top - f > SEAL_DROP) || lo < f + (coveredAt(ox, oz) !== Infinity ? 3.4 : -1)) { need.push(null); continue; }
+        need.push(crosses(x - inx * 1.2, z - inz * 1.2, x + inx * 0.3, z + inz * 0.3, top + 0.5) ? null : { s, f, top, lo });
+      }
+      for (let j = 0; j <= m; j++) {
+        if (!need[j]) continue;
+        let k = j; while (k + 1 <= m && need[k + 1] && need[k + 1].s - need[j].s < 8) k++;
+        const run = need.slice(j, k + 1), s0 = Math.max(0, run[0].s - 0.25), s1 = Math.min(L, run[run.length - 1].s + 0.25);
+        const x0 = ax + ux * s0, z0 = az + uz * s0, x1 = ax + ux * s1, z1 = az + uz * s1;
+        const f0 = run[0].f, f1 = run[run.length - 1].f, t0 = run[0].top, t1 = run[run.length - 1].top;
+        const b0 = run[0].lo + 0.5, b1 = run[run.length - 1].lo + 0.5, ox = -inx * PAR_T, oz = -inz * PAR_T;
+        col(C.wall).face([[x0, b0, z0], [x1, b1, z1], [x1, t1 + PAR, z1], [x0, t0 + PAR, z0]], [inx, 0, inz]);
+        col(C.cap).face([[x0, t0 + PAR, z0], [x1, t1 + PAR, z1], [x1 + ox, t1 + PAR, z1 + oz], [x0 + ox, t0 + PAR, z0 + oz]], [0, 1, 0]);
+        col(C.wall).face([[x0 + ox, t0 - 0.2, z0 + oz], [x1 + ox, t1 - 0.2, z1 + oz], [x1 + ox, t1 + PAR, z1 + oz], [x0 + ox, t0 + PAR, z0 + oz]], [-inx, 0, -inz]);
+        const lo = Math.min(...run.map((q) => q.lo)), hi = Math.max(...run.map((q) => q.top)) + PAR, cx = (x0 + x1) / 2 - inx * 0.15, cz = (z0 + z1) / 2 - inz * 0.15;
+        mine.push([cx, cz, (s1 - s0) / 2 + 0.05, 0.15, Math.atan2(uz, ux), lo, hi]);
+        if (S?.obox) { S.obox(cx, cz, (s1 - s0) / 2 + 0.05, 0.15, Math.atan2(uz, ux), lo, hi, 'wall'); stats.colliders++; }
+        stats.seals++;
+        j = k;
+      }
     }
   }
 

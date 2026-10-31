@@ -1,0 +1,22 @@
+Follow /Users/alexandertinyaev/Sites/oradea-drive/tools/oradea/agents/BRIEF.md (read it fully first; the agent prompt overrides its stale parts: the dev server port, the shot tool path, the neighbours' heights).
+
+Slug: unirii-est
+
+The east side of Piața Unirii (the spawn square, where every player starts) and Strada Vasile Alecsandri, the pedestrian street running off it. Done, not yours: the square itself, the Moon Church, St Nicholas cathedral, the Greek Catholic bishop's palace (sites/unirii), City Hall (sites/primaria), the Black Eagle Palace (sites/primaria or civic), Calea Republicii with the Moskovits Miksa palace and Ullmann (sites/republicii). Check every OSM id you take against the skip lists of all src/world/oradea/sites/*.js first.
+
+Build, in this order (finish and screenshot each before the next):
+1. Palatul Moskovits Adolf și Fiii, OSM way 6481080 (Str. Vasile Alecsandri 1, the corner with the square). Vágó brothers' Secession palace: three floors over a tall ground floor, bicolour ceramic tile, a sgraffito frieze under the cornices, two triangular attics over bow windows facing the square. Dates vary by source (1904–1905, 1910, 1912 design): say "early 1910s" or give the range, never one firm year. The Moskovits Miksa palace in sites/republicii/moskovits.js is the same family: you may import from sites/republicii/ (finished, committed) but never edit it.
+2. Casa Deutsch, OSM way 1141044041 (Str. Vasile Alecsandri 4). 1906–1910, Ferenc Sztarill; only the two-storey street facade survived a 1970s demolition: folk-floral Secession decoration (embroidery motifs), a top edge in semicircles, a trilobed tympanum with a heart-shaped window. Model the facade in detail and a plain box behind it. Colours from current photos.
+3. Casa Kováts, OSM way 6481082 (Piața Unirii 5). Neoclassical, present look 1836 after a fire, L-shaped round a yard, two fronts, a coffered half-round vault over the entrance passage; restored 2010–2011.
+4. Liceul Greco-Catolic «Iuliu Maniu», OSM way 1374968255 (Str. Iuliu Maniu 5; it has a third front on the square). 1925, Anton Szallerbeck, neo-Romanian.
+5. The rest of the Vasile Alecsandri row as facade lots: No. 7 Munk (1893–94, inside OSM way 21059343), No. 9 Rendes Vilmos (1903–04, neo-Renaissance), No. 13 Amant (classicist, once a hotel), the Roth house (1912, Mende Valér), the Green Tree Inn (1760, now the Arcadia puppet theatre). Pin each to its OSM building from addresses and Street View. Use the Republicii facade-lot kit (sites/republicii/table.js, herokit.js and its helpers) the way republicii.js does.
+6. Optional, if time is left: Piața Unirii no. 6 (rehabilitated by the city, oradeaheritage.ro/proiecte-de-reabilitare/).
+
+Sources: oradeaheritage.ro (the city's heritage programme; it has a page per building), visitoradea.com/en/what-to-see/vasile-alecsandri-street, ro.wikipedia (Casa Deutsch, Casa Roth), Wikimedia Commons categories (Deutsch House, Moskovits Adolf and Sons Palace, Kovats House), arhitectura-1906.ro/en/2019/12/oradeas-heritage/. Photos: Commons first, Street View for the row.
+
+Places (put them in SITE.places; the orchestrator moves them into places.js; all text bilingual via t()):
+- one sight, id 'alecsandri', «Strada Vasile Alecsandri» / «Vasile Alecsandri Street»: it is on the city's official tourism list (visitoradea.com). Its footprint ids: Casa Deutsch and the row's buildings. Its note names Casa Deutsch and the Arcadia theatre.
+- improved: 'moskovitsadolf' (Palatul Moskovits Adolf și Fiii), 'kovats' (Casa Kováts), 'iuliumaniu' (Liceul Greco-Catolic «Iuliu Maniu»). places.js already has 'moskovits' (the Miksa palace): don't touch it, and don't reuse an id it has.
+- No commercial shop names on the buildings: blank fascias where today's shops are. The Arcadia theatre's own lettering is fine.
+
+Budget: Moskovits Adolf ≤ 25k vertices, Casa Kováts and the lyceum ≤ 15k each, Casa Deutsch ≤ 10k, row lots ~3–5k each; ≤ 12 draw calls for the whole site (share materials and atlases). This is the square every player starts on, phone players too: every part is inside the phone's 1800 m disc, so it all ships to phones, and the phone frame budget is ~150–200 draw calls in total.

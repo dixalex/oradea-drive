@@ -114,6 +114,30 @@ for (const m of TRENCH) {
     }
   }
   ok(rays > 0 && hits >= rays * 0.9, `${m}: walls stop a ray across the cut (${hits}/${rays})`);
+  // the edge: a car-sized box pushed at every edge point from 4 m back on the street (or the slab over a tunnel) never
+  // ends over the cut more than 0.8 m below where it started (corners where street, slab and cut meet had no wall)
+  const D8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7071, 0.7071], [-0.7071, 0.7071], [0.7071, -0.7071], [-0.7071, -0.7071]];
+  let pushes = 0, falls = 0, fallAt = null;
+  const carHit = {};
+  for (let x = st.box[0]; x <= st.box[2]; x += 1) for (let z = st.box[1]; z <= st.box[3]; z += 1) {
+    if (st.openAt(x, z) !== Infinity) continue;
+    const s = W.hf.heightAt(x, z);
+    for (const [dx, dz] of D8) {
+      const f = st.openAt(x + dx * 1.5, z + dz * 1.5), ox = x - dx * 4, oz = z - dz * 4;
+      if (f === Infinity || s - f < 0.8 || st.openAt(ox, oz) !== Infinity) continue;
+      const b = { x: ox, y: W.hf.heightAt(ox, oz) + 0.05, z: oz, yaw: Math.atan2(dx, dz), hl: 2.6, hw: 1.0, h: 1.6, step: 0.35 };
+      if (cw.pushBox({ ...b }, carHit)) continue; // no room for a car there (it would start inside a wall)
+      pushes++;
+      for (let k = 0; k < 30; k++) {
+        b.x += dx * 0.2; b.z += dz * 0.2;
+        if (st.openAt(b.x, b.z) === Infinity) b.y = W.hf.heightAt(b.x, b.z) + 0.05; // over the cut it keeps its height
+        cw.pushBox(b, carHit);
+        const fc = st.openAt(b.x, b.z);
+        if (fc !== Infinity && s - fc > 0.8) { falls++; fallAt ??= [x, z]; break; }
+      }
+    }
+  }
+  ok(pushes > 0 && falls === 0, `${m}: a car pushed at the cut's edge stays on the street (${falls} fall-ins of ${pushes}${fallAt ? `, first from (${fallAt})` : ''})`);
   // clear(): trees off the floor
   const w0 = cut[0], mid = w0.P[Math.floor(w0.P.length / 2)];
   const fa = w0.P[Math.max(0, Math.floor(w0.P.length / 2) - 1)], fb = w0.P[Math.min(w0.P.length - 1, Math.floor(w0.P.length / 2) + 1)], fl = Math.hypot(fb[0] - fa[0], fb[1] - fa[1]) || 1;
