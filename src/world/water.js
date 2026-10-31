@@ -2,13 +2,15 @@
 //
 //   WATER_Y: the shared surface datum (m). Ground water classification, waterfront props and car water contact use it.
 //   buildWater({ scene, T?, renderer?, shore?, shoreDist?, skirtWater?, y = WATER_Y, reflect = true, reflectHz = 12,
-//                reflectScale = 0.4, skirtRadius = 24000, skirtCenter = [0, 0] }) -> water
+//                reflectScale = 0.4, skirtRadius = 24000, skirtCenter = [0, 0], prepass = false }) -> water
 //     One camera-following disc at the datum under everything: land geometry sits above it, so the surface covers the
 //     reservoir to the horizon with no seams. skirtWater(dx, dz) -> bool classifies directions beyond skirtRadius
 //     (unit vector from skirtCenter): false -> a dull land-coloured band there, fogged into the horizon.
 //     renderer enables a planar reflection (reduced resolution, reflectHz, oblique near plane, faded out when
 //     shoreDist(camera) says the river is far away); without it the material falls back to the scene environment.
-//     water.update(dt, camera?) every frame (camera may be missing); water.setReflection(on, { hz, scale }?)
+//     water.update(dt, camera?) every frame (camera may be missing); with prepass, water.prepass(camera) once the frame's
+//     movers have moved: the mirror is captured there, at the top level, not from inside the main render (no program
+//     re-derivation for every material it draws); water.setReflection(on, { hz, scale }?)
 //     (rate and size, the build values when left out); water.reflectCull(obj) ->
 //     unregister(): obj (drawn with frustumCulled = false, e.g. the player car) is left out of a capture whose view its
 //     world bounds miss – no visible change, its draw calls saved; water.setSkyAdd(rgb):
@@ -164,7 +166,7 @@ export function obliqueNear(P, C, reversed) {
   else { const a = -2 * _q.z / cq; e[2] = a * C.x; e[6] = a * C.y; e[10] = a * C.z + 1; e[14] = a * C.w; }
 }
 
-export function buildWater({ scene, renderer = null, shoreDist = null, skirtWater = null, y = WATER_Y, reflect = true, reflectHz = 12, reflectScale = 0.4, skirtRadius = 24000, skirtCenter = [0, 0] } = {}) {
+export function buildWater({ scene, renderer = null, shoreDist = null, skirtWater = null, y = WATER_Y, reflect = true, reflectHz = 12, reflectScale = 0.4, skirtRadius = 24000, skirtCenter = [0, 0], prepass = false } = {}) {
   const planar = !!(renderer && reflect);
   const skirt = typeof skirtWater === 'function';
   const material = waterMaterial({ planar, skirt }), u = material.userData.u;
@@ -200,16 +202,15 @@ export function buildWater({ scene, renderer = null, shoreDist = null, skirtWate
     for (let i = 0; i < 4; i += 1) if (fr.planes[i].distanceToPoint(sph.center) < -sph.radius) return false;
     return true;
   };
-  if (planar) {
-    mesh.onBeforeRender = (rend, scn, camera) => {
-      if (!R.on || R.failed || R.busy || R.weight <= 0.001 || !camera?.isPerspectiveCamera || camera === R.cam || scn.overrideMaterial) return;
+  let pre = null; // prepass: the camera the mirror was captured for at the top level this frame
+  const capture = (rend, scn, camera) => {
       camera.getWorldPosition(eye); camera.getWorldDirection(look);
       if (eye.y < y + 0.05) return; // under water
       const now = (globalThis.performance ?? Date).now();
       const due = now - last.t > 1000 / reflectHz || eye.distanceTo(last.pos) > 12 || look.dot(last.dir) < 0.99;
       if (!due) return;
       R.busy = true;
-      const t0 = now, prevRT = rend.getRenderTarget(), prevXR = rend.xr.enabled, prevSh = rend.shadowMap.autoUpdate;
+      const t0 = now, prevRT = rend.getRenderTarget(), prevXR = rend.xr.enabled, prevSh = rend.shadowMap.autoUpdate, prevNU = rend.shadowMap.needsUpdate;
       try {
         rend.getDrawingBufferSize(bufSize);
         const rw = Math.max(64, Math.min(1024, Math.round(bufSize.x * reflectScale))), rh = Math.max(32, Math.round(rw * bufSize.y / Math.max(1, bufSize.x)));
@@ -233,7 +234,7 @@ export function buildWater({ scene, renderer = null, shoreDist = null, skirtWate
           fr.setFromProjectionMatrix(pv.multiplyMatrices(rc.projectionMatrix, rc.matrixWorldInverse));
           for (const o of cullSet) if (o.visible && !inMirror(o)) { o.visible = false; hidden.push(o); }
         }
-        mesh.visible = false; rend.xr.enabled = false; rend.shadowMap.autoUpdate = false;
+        mesh.visible = false; rend.xr.enabled = false; rend.shadowMap.autoUpdate = false; rend.shadowMap.needsUpdate = false; // a pending shadow redraw is the main view's
         rend.setRenderTarget(R.rt); rend.state.buffers.depth.setMask(true);
         if (rend.autoClear === false) rend.clear();
         rend.render(scn, rc);
@@ -244,12 +245,19 @@ export function buildWater({ scene, renderer = null, shoreDist = null, skirtWate
       } finally {
         for (const o of hidden) o.visible = true;
         hidden.length = 0;
-        mesh.visible = true; rend.xr.enabled = prevXR; rend.shadowMap.autoUpdate = prevSh;
+        mesh.visible = true; rend.xr.enabled = prevXR; rend.shadowMap.autoUpdate = prevSh; rend.shadowMap.needsUpdate = prevNU;
         rend.setRenderTarget(prevRT);
         if (camera.viewport !== undefined) rend.state.viewport(camera.viewport);
       }
       R.ms = (globalThis.performance ?? Date).now() - t0;
       R.busy = false;
+  };
+  const skip = (scn, camera) => !R.on || R.failed || R.busy || R.weight <= 0.001 || !camera?.isPerspectiveCamera || camera === R.cam || scn.overrideMaterial;
+  if (planar) {
+    mesh.onBeforeRender = (rend, scn, camera) => {
+      if (skip(scn, camera)) return;
+      if (pre === camera) { pre = null; return; } // already captured before this render
+      capture(rend, scn, camera);
     };
   }
 
@@ -269,6 +277,16 @@ export function buildWater({ scene, renderer = null, shoreDist = null, skirtWate
       }
       R.weight += (target - R.weight) * Math.min(1, (dt || 0) * 3);
       u.uReflW.value = u.tRefl.value && !R.failed ? R.weight * 0.9 : 0;
+    },
+    // prepass: capture the mirror at the top level, before the frame's render, instead of from inside it. A capture inside
+    // the render runs in three's nested render state, whose lights version differs from the main one, so every lit
+    // material it draws re-derives its program twice per capture (~250 lookups on a mirror frame). Call it after the
+    // frame's movers have moved; a render it did not precede (photo mode, a frame without it) captures inside as before
+    prepass(camera) {
+      if (!planar || !prepass || !camera || !mesh.visible) return;
+      let scn = mesh; while (scn.parent) scn = scn.parent;
+      if (!scn.isScene || skip(scn, camera)) return;
+      capture(renderer, scn, camera); pre = camera;
     },
     setReflection(on, { hz = HZ0, scale = SCALE0 } = {}) { R.on = !!on && planar; reflectHz = hz; reflectScale = scale; if (!R.on) u.uReflW.value = 0; },
     reflectCull(obj) { if (obj) cullSet.add(obj); return () => cullSet.delete(obj); },

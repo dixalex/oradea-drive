@@ -222,7 +222,7 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
   await nextFrame();
 
   // water: the river at one level (no reservoir to the horizon: land all round), the banks' wet bands, ponds
-  const water = buildWater({ scene: root, T, renderer, shoreDist: ground.shoreDist, skirtWater: () => false });
+  const water = buildWater({ scene: root, T, renderer, shoreDist: ground.shoreDist, skirtWater: () => false, prepass: true });
   const wet = buildWetBands({ scene: root, T, segs: ground.wetSegs, isWater: ground.isWater });
   const ponds = buildPonds({ scene: root, map, heightAt });
 
@@ -333,6 +333,7 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
       farCull.update(camPos); proxies?.update(camPos);
       debris.update(dt); treeBreak.update(dt);
       try { traffic?.update(dt, camera); people?.update(dt, camera); } catch (e) { if (!lifeErr) { lifeErr = true; console.error('[oradea] life update failed', e); } }
+      water.prepass(camera); // the river mirror, now that the cars and people have moved
     },
     setQuality(q) {
       const D = DETAIL[q] || DETAIL.high;
