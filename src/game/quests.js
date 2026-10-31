@@ -90,8 +90,10 @@ export function createQuests({ world, player, scene, hud = null, reward = null, 
   const buildLights = () => {
     clearLights();
     for (const c of active?.cards || []) {
-      const mR = new THREE.MeshBasicMaterial({ color: GREY, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, fog: false });
-      const mW = new THREE.MeshBasicMaterial({ color: GREY, alphaMap: alpha, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, fog: false });
+      // one pass: unlit, one colour and no depth write, so the blend order of the back and front faces cannot show,
+      // and three's two-pass draw would re-derive both programs twice a frame (and compile four variants, not two)
+      const mR = new THREE.MeshBasicMaterial({ color: GREY, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, fog: false, forceSinglePass: true });
+      const mW = new THREE.MeshBasicMaterial({ color: GREY, alphaMap: alpha, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, fog: false, forceSinglePass: true });
       const g = new THREE.Group(); g.name = `quest-${c.id}`;
       const ring = new THREE.Mesh(ringGeo, mR); ring.scale.setScalar(4); ring.position.y = 0.14;
       const wall = new THREE.Mesh(wallGeo, mW); wall.scale.set(2.6, 45, 2.6);
