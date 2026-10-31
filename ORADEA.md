@@ -27,6 +27,7 @@ updates merge cleanly. Oradea lives beside them, and one switch picks the city:
 | `sites/baroc` | the Roman Catholic basilica, the Baroque Palace, Canons' Row and the park between them |
 | `sites/republicii` | Calea Republicii's Secession fronts (22 lots from a facade atlas), the Moskovits and Ullmann palaces |
 | `sites/unirii-est` | the east side of Piața Unirii and Strada Vasile Alecsandri: the Moskovits Adolf palace, Casa Deutsch, Casa Kováts, the «Iuliu Maniu» lyceum, five row fronts with the Arcadia theatre (one 2048 x 2048 facade atlas, half size on the phone) |
+| `sites/ferdinand-olosig` | the Art Nouveau corners: Casa Poynár, the Füchsl palace, Hotel Transilvania, the Adorján houses I and II, the Rimanóczy hotel and baths (restored state; scaffolded until ~Dec 2026); one 2048 x 2048 atlas, half size on the phone |
 | `sites/gara` | the railway station with its forecourt and tram shelter, Oradea Arena (2022) |
 | `sites/orthodox` | 23 Orthodox churches: the Episcopal Cathedral, Holy Trinity, St Andrew, the Velența archangels' church and the Corbești wooden church hand-built, the rest from a church kit |
 | `sites/baptist` | Emanuel (1993) and the BBSO campus (2024) hand-built, six smaller Baptist churches from a kit |
@@ -102,7 +103,7 @@ links, his radio songs, the Ukrainian voice lines, the Cherkasy map data and the
 
 - Phones: `ORADEA-MOBILE.md` (measured memory, phone limits, the plan, the phone beta's numbers); `tools/oradea/memory/`
   measures the load. The phone beta (`?phone`) waits for real-phone tests before phones are sent to it by default.
-- More landmarks: `tools/oradea/agents/` holds the agent brief and the cards; `card-ferdinand-olosig.txt` (Poynár, Füchsl, Hotel Transilvania, Adorján, Rimanóczy) is next. The civic landmarks are built (`sites/civic.js`: Astoria, the palaces of Justice, Finance and the Post, the Prefecture, Lotus Center, Nymphaea, four water towers); Palatul Copiilor is not.
+- More landmarks: `tools/oradea/agents/` holds the agent brief and the cards; batches 1 and 2 (`card-unirii-est.txt`, `card-ferdinand-olosig.txt`) are built; next from the content research: Parcul Traian's museums and bronzes (no Freemasons' Temple), then Ciuperca, the zoo and Parcul 1 Decembrie; the Lévay house and the Rimanóczy Sr. palace were left out of batch 2. The civic landmarks are built (`sites/civic.js`: Astoria, the palaces of Justice, Finance and the Post, the Prefecture, Lotus Center, Nymphaea, four water towers); Palatul Copiilor is not.
 
 - The dispatcher and passenger voice lines: record Romanian and English ones (`tools/audio/gen.mjs`, an ElevenLabs key).
 - Radio stations: none publishes terms for third-party players, so the radio is off since 2026-10-31 (empty tracks.json, the

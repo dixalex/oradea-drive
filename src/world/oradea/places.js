@@ -93,6 +93,17 @@ export const PLACES = [
     note: t('Casă neoclasică, cu înfățișarea de azi din 1836, după un incendiu; restaurată în 2010–2011', 'A neoclassical house, its present look from 1836, after a fire; restored in 2010–2011') },
   { id: 'iuliumaniu', kind: 'improved', icon: '🏫', bld: [1374968255], name: t('Liceul Greco-Catolic «Iuliu Maniu»', 'Greek Catholic Lyceum «Iuliu Maniu»'),
     note: t('Clădire în stil neoromânesc din 1925, arhitect Anton Szallerbeck', 'A Neo-Romanian building of 1925 by Anton Szallerbeck') },
+  // the Art Nouveau corners round Piața Ferdinand and in Olosig (sites/ferdinand-olosig); none has its own visitoradea.com page
+  { id: 'poynar', kind: 'improved', icon: '🏠', bld: [6481083], cut: { p: [49.3, -176.8], n: [0.349, -0.937] }, name: t('Casa Poynár', 'Poynár House'), // OSM 6481083 is the whole 70 m wedge: the cut keeps the house at its tip
+    note: t('Casă Secession din 1907–1911 (arh. Ferenc Sztarill), cu turnul rotund și cupola, unde începe Calea Republicii', 'A Secession house of 1907–1911 (architect Ferenc Sztarill) with its round tower and cupola, where Calea Republicii begins') },
+  { id: 'fuchsl', kind: 'improved', icon: '🍇', bld: [1534824825], name: t('Palatul Füchsl', 'Füchsl Palace'),
+    note: t('Palat Secession din 1902–1903 (arh. Bálint Zoltán și Jámbor Lajos) pentru negustorii de vin Füchsl, cu colțul rotunjit, frontoane curbe și ciorchini de struguri', 'A Secession palace of 1902–1903 (architects Zoltán Bálint and Lajos Jámbor) for the Füchsl wine merchants, with its rounded corner, curved gables and bunches of grapes') },
+  { id: 'transilvania', kind: 'improved', icon: '🏨', bld: [421787916], name: t('Hotel Transilvania', 'Hotel Transilvania'),
+    note: t('Hotel din 1903–1904, deschis ca «Pannonia», cu friza de reliefuri pastorale, pe latura de vest a Pieței Regele Ferdinand I', 'A hotel of 1903–1904, opened as the «Pannonia», with its pastoral relief frieze, on the west side of King Ferdinand Square') },
+  { id: 'adorjan', kind: 'improved', icon: '🏠', bld: [421787914, 489773508], name: t('Casele Adorján I și II', 'Adorján Houses I and II'),
+    note: t('Două case de raport Secession din Olosig (1902–1905, arh. Komor Marcell și Jakab Dezső), una roz, una gri, cu ornamente de stuc', 'Two Secession apartment houses in Olosig (1902–1905, architects Marcell Komor and Dezső Jakab), one pink, one grey, covered in stucco ornament') },
+  { id: 'rimanoczy', kind: 'improved', icon: '🏛️', bld: [421787874, 21056820], name: t('Hotelul și Băile Rimanóczy', 'Rimanóczy Hotel and Baths'),
+    note: t('Complexul lui Rimanóczy Kálmán senior, cu hotel, băi de aburi și cafeneaua Royal; acoperit acum de schele, aici în starea restaurată, cu turnul de colț', 'Kálmán Rimanóczy senior\'s complex of hotel, steam baths and the Royal café; wrapped in scaffolding today, shown here restored, with its corner turret') },
   sight('sfnicolae', '⛪', [286245385], t('Catedrala greco-catolică Sfântul Nicolae', 'St Nicholas Greek Catholic Cathedral'),
     t('Lângă Palatul Episcopal Greco-Catolic', 'Next to the Greek Catholic bishop\'s palace')),
   sight('garaoradea', '🚉', [242379148], t('Gara Oradea', 'Oradea railway station'),
