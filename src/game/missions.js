@@ -83,8 +83,10 @@ export function createMissions({ world, player, hud = null, scene, input = null 
   const ringGeo = new THREE.RingGeometry(0.86, 1, 48).rotateX(-Math.PI / 2);
   const beacon = (color, r = 3, h = 90) => {
     const c = new THREE.Color(color);
-    const m1 = new THREE.MeshBasicMaterial({ color: c, alphaMap: fade, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
-    const m2 = new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    // one pass (additive: the same picture as three's back-then-front two), so the first call compiles no shaders: these
+    // are the partner rings' programs, built at load (two-pass variants cost a ~77 ms hitch on a throttled phone)
+    const m1 = new THREE.MeshBasicMaterial({ color: c, alphaMap: fade, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true });
+    const m2 = new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true });
     const g = new THREE.Group();
     const p = new THREE.Mesh(pillarGeo, m1); p.scale.set(r * 0.55, h, r * 0.55);
     const ring = new THREE.Mesh(ringGeo, m2); ring.scale.setScalar(r); ring.position.y = 0.15;
