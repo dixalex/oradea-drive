@@ -1,5 +1,5 @@
-// OWNER: oradea. Biserica «Sfânta Treime» (Holy Trinity, Parcul Traian 13, Oradea): built from 1692 as the Roman Catholic St Bridget's,
-// rebuilt 1722, Ruthenian Greek Catholic from 1786, Orthodox since 1948; a historic monument. The OSM way is the untagged building
+// OWNER: oradea. Biserica «Sfânta Treime» (Holy Trinity, Parcul Traian 13, Oradea): built in 1693 as the Roman Catholic St Bridget's,
+// burned 1703, restored by 1722, Ruthenian Greek Catholic from 1786, Orthodox since 1948; a historic monument. The OSM way is the untagged building
 // 423125889 (the Wikipedia coordinates fall 18 m off it). After the Commons photos «Biserica Sf. Brigita Oradea» / «Biserica Sf. Treime
 // (fosta Sf. Brigitta)»: a small hall in tan rough-cast with a brown base and cream cornices, a Dutch (volute) gable on the west front
 // with pylon pinnacles and a round window with a cross over the mosaic of the Holy Trinity, two arched mosaic niches with the

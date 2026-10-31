@@ -1,5 +1,5 @@
 // OWNER: oradea. The Postal Palace (Palatul Poștei, Oficiul Poștal Oradea 1), Strada Roman Ciorogariu 12, Oradea (OSM relation 21028932;
-// Virgil Nagy, 1894–95, extended 1909–11): a block of three storeys round a big yard, the street front along the north-east side.
+// 1894–1909, eclectic, a Ministry of Posts design; the corner wing 1909–11 by Virgil Nagy, ro.wikipedia): a block of three storeys round a big yard, the street front along the north-east side.
 // Built after the Wikimedia Commons photos of the front (the corner view and the portal), and the Street View panoramas of 2024 (under
 // renovation nets, so the colours follow the Commons photos: olive-grey render with ochre dressings; no signage drawn):
 //   a pale stone plinth with small grated windows, a rusticated ground floor with tall arched windows in ochre frames, a first floor of

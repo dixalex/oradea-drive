@@ -1,5 +1,5 @@
 // OWNER: oradea. The Palace of Justice (Palatul de Justiție, now the Tribunal Bihor; Strada Roman Ciorogariu / Piața Independenței side,
-// opposite Parcul Traian), Oradea: designed by István Kiss, built 1898–1900 in an eclectic Neo-Baroque / Renaissance mix. Built after the
+// opposite Parcul Traian), Oradea: designed by István Kiss, finished in 1901 (ro.wikipedia) in an eclectic Neo-Baroque / Renaissance mix. Built after the
 // Wikimedia Commons photos of the front (2012) and the Google Street View panoramas of 2024–2025 round the building:
 //   a block of three wings round three courtyards (OSM relation 20421787, 12 outer points, three holes), four storeys counting the
 //   rusticated ground floor: sandstone ashlar below, cream render above with white dressings, arched first-floor windows with
