@@ -19,7 +19,8 @@
 //       car brought home when it starts outside (a desktop save, ?at=)
 //     - the camera's far plane at FAR (past it everything is lost in the phone haze)
 //     - while no shadow maps are drawn (the phone levels: render/shadows.js), a soft blob under the car; in the chase view
-//       the Cybertruck's cabin and driver (behind its dark glass) leave the main camera's layer: ~10 draw calls
+//       the Cybertruck's cabin and driver (behind its dark glass) leave the main camera's layer: ~10 draw calls; the car's
+//       transparent double-sided materials (glass, jet flames) draw in one pass
 //     - the guard's pill when the last start crashed; the guard's record follows quality changes, is closed on pagehide
 //       and while the tab is hidden, and dropped after a minute of play
 import * as THREE from 'three';
@@ -227,6 +228,11 @@ export function startPhone(ctx, { guard = null, ready = Promise.resolve() } = {}
   }
 
   // ---- the car: a blob while there are no shadow maps, no cabin in the chase view
+  // its see-through double-sided materials (the glass, the jet flames) draw in one pass, not three's back-then-front two:
+  // 3 draw calls fewer (7 in flight), and no program re-derivation twice per draw. Set before the shader warm-up, so the
+  // one-pass programs are the ones it compiles
+  const onePass = (root) => root.traverse((o) => { for (const m of [].concat(o.material ?? [])) if (m.transparent && m.side === THREE.DoubleSide) m.forceSinglePass = true; });
+  onePass(car.model.object);
   const blob = createBlob(ctx.renderer);
   ctx.scene.add(blob);
   let cabin = [], cabinOf = null, cabinOn = true;
@@ -244,6 +250,7 @@ export function startPhone(ctx, { guard = null, ready = Promise.resolve() } = {}
       for (const m of cabin) m.layers.enable(0);
       cabinOf = car.model; cabin = []; cabinOn = true;
       car.model.object.traverse((o) => { if (o.isMesh && CABIN.test(o.material?.name ?? '')) cabin.push(o); });
+      onePass(car.model.object);
     }
     const want = car.cam.mode === 'cockpit';
     if (want !== cabinOn) { cabinOn = want; for (const m of cabin) if (want) m.layers.enable(0); else m.layers.disable(0); }

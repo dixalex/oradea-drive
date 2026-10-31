@@ -369,7 +369,10 @@ export async function startGame({ container = document.getElementById('app') || 
 
   setOverlay(overlay, 'Компілюємо шейдери…');
   ctx.sky.update(0, camera);
-  await warmupShaders(ctx.renderer, scene, camera);
+  // a city build (Oradea) compiles for the post chain's linear target: the screen's sRGB variants were never drawn, so
+  // every program compiled again on its first sight (frame one, each new site, the first take-off). Cherkasy: unchanged.
+  // A phone waits longer: what is not ready at the timeout is finished inside frame one anyway, a frozen screen instead
+  await warmupShaders(ctx.renderer, scene, camera, phone ? 20000 : undefined, { linear: !!CITY_CFG });
   track('game_ready', { load_ms: Math.round(performance.now()), quality: ctx.quality });
   consent.ready();
   consent.accepted.then(() => { // the loop starts only once the terms are accepted (at once for a returning player)

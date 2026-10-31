@@ -63,7 +63,8 @@ function nearest(P, x, z) {
 }
 const atEnd = (P, q) => (q.i === 0 && q.f <= 1e-6) || (q.i === P.length - 2 && q.f >= 1 - 1e-6); // projects onto an end of P
 // convex polygon helpers on [x, z] points
-const inConvex = (pts, x, z, eps = 0) => { for (let i = 0, n = pts.length; i < n; i++) { const [ax, az] = pts[i], [bx, bz] = pts[(i + 1) % n]; if (cross(bx - ax, bz - az, x - ax, z - az) < -eps) return false; } return true; };
+// (indexed, not destructured: it runs for every hf.heightAt in a passage's box, and the destructuring made garbage)
+const inConvex = (pts, x, z, eps = 0) => { for (let i = 0, n = pts.length; i < n; i++) { const a = pts[i], b = pts[i + 1 < n ? i + 1 : 0]; if (cross(b[0] - a[0], b[1] - a[1], x - a[0], z - a[1]) < -eps) return false; } return true; };
 const area2 = (pts) => { let s = 0; for (let i = 0, n = pts.length; i < n; i++) { const [ax, az] = pts[i], [bx, bz] = pts[(i + 1) % n]; s += ax * bz - bx * az; } return s; };
 const convex = (pts) => { let sg = 0; for (let i = 0, n = pts.length; i < n; i++) { const [ax, az] = pts[i], [bx, bz] = pts[(i + 1) % n], [cx, cz] = pts[(i + 2) % n]; const c = cross(bx - ax, bz - az, cx - bx, cz - bz); if (Math.abs(c) < 1e-9) continue; if (sg && Math.sign(c) !== sg) return false; sg = Math.sign(c); } return true; };
 const boxOf = (pts) => { let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity; for (const [x, z] of pts) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (z < z0) z0 = z; if (z > z1) z1 = z; } return [x0, z0, x1, z1]; };

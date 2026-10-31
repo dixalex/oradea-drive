@@ -34,12 +34,13 @@ function densify(P, step) {
   return out;
 }
 const cumOf = (P) => { const c = [0]; for (let k = 1; k < P.length; k++) c.push(c[k - 1] + Math.hypot(P[k][0] - P[k - 1][0], P[k][1] - P[k - 1][1])); return c; };
-function at(P, cum, s) { // point and unit heading at arc s (clamped)
+function at(P, cum, s, out = [0, 0, 0, 0]) { // point and unit heading at arc s (clamped), written into out
   const L = cum[cum.length - 1]; s = Math.max(0, Math.min(L, s));
   let lo = 0, hi = cum.length - 1;
   while (hi - lo > 1) { const m = (lo + hi) >> 1; if (cum[m] <= s) lo = m; else hi = m; }
-  const seg = cum[hi] - cum[lo] || 1, f = (s - cum[lo]) / seg, [ax, az] = P[lo], [bx, bz] = P[hi];
-  return [ax + (bx - ax) * f, az + (bz - az) * f, (bx - ax) / seg, (bz - az) / seg];
+  const seg = cum[hi] - cum[lo] || 1, f = (s - cum[lo]) / seg, A = P[lo], B = P[hi], ax = A[0], az = A[1], bx = B[0], bz = B[1];
+  out[0] = ax + (bx - ax) * f; out[1] = az + (bz - az) * f; out[2] = (bx - ax) / seg; out[3] = (bz - az) / seg;
+  return out;
 }
 
 // routes: from each way's ends walk on through the junction to the straightest next way (turn under 40 degrees)
@@ -204,13 +205,15 @@ export function buildTrams({ map, root, heightAt, ground, detailMat }) {
   const ends = new THREE.InstancedMesh(endGeo, mat, Math.max(1, cars.length * 2)), mids = new THREE.InstancedMesh(midGeo, mat, Math.max(1, cars.length));
   for (const m of [ends, mids]) { m.castShadow = true; m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); group.add(m); }
   ends.name = 'tram-ends'; mids.name = 'tram-mids';
-  const live = cars.map(() => [[0, 0, 0], [0, 0, 0], [0, 0, 0]]); // per car, per section: x, z, yaw
-  const place = (mesh, i, s, r, flip) => {
-    const a = at(r.P, r.cum, s + SEC / 2 - 1.6), b = at(r.P, r.cum, s - SEC / 2 + 1.6);
+  // per car, per section: x, z, yaw, y; rewritten in place every frame (with the scratch points below: no garbage a
+  // frame, the phone's GC pauses were partly this)
+  const live = cars.map(() => [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]), pa = [0, 0, 0, 0], pb = [0, 0, 0, 0];
+  const place = (mesh, i, s, r, flip, out) => {
+    const a = at(r.P, r.cum, s + SEC / 2 - 1.6, pa), b = at(r.P, r.cum, s - SEC / 2 + 1.6, pb);
     const x = (a[0] + b[0]) / 2, z = (a[1] + b[1]) / 2, yaw = Math.atan2(-(a[1] - b[1]), a[0] - b[0]) + (flip ? Math.PI : 0);
     const y = (railY(a[0], a[1]) + railY(b[0], b[1])) / 2 + 0.02;
     m4.compose(v.set(x, y, z), q.setFromEuler(e.set(0, yaw, 0)), sc.set(1, 1, 1)); mesh.setMatrixAt(i, m4);
-    return [x, z, yaw, y];
+    out[0] = x; out[1] = z; out[2] = yaw; out[3] = y;
   };
   const pose = () => {
     const t = Date.now() / 1000;
@@ -218,9 +221,9 @@ export function buildTrams({ map, root, heightAt, ground, detailMat }) {
       const { r } = c, span = Math.max(1, r.len - 3 * SEC), u = (t * SPEED + c.phase) % (2 * span);
       const head = (u < span ? u : 2 * span - u) + 2.5 * SEC, back = u >= span; // ping-pong; the leading cab turns round
       const S = [head - SEC, head, head - 2 * SEC]; // middle, then the two ends
-      live[i][1] = place(mids, i, S[0], r, false);
-      live[i][0] = place(ends, 2 * i, back ? S[2] : S[1], r, back);
-      live[i][2] = place(ends, 2 * i + 1, back ? S[1] : S[2], r, !back);
+      place(mids, i, S[0], r, false, live[i][1]);
+      place(ends, 2 * i, back ? S[2] : S[1], r, back, live[i][0]);
+      place(ends, 2 * i + 1, back ? S[1] : S[2], r, !back, live[i][2]);
     });
     ends.instanceMatrix.needsUpdate = true; mids.instanceMatrix.needsUpdate = true;
   };
@@ -241,8 +244,8 @@ export function buildTrams({ map, root, heightAt, ground, detailMat }) {
       return false;
     },
     collide(p, r = 1, h = 1.3) {
-      for (const secs of live) for (const [x, z, yaw, y] of secs) {
-        const ox = p.x - x, oz = p.z - z;
+      for (let i = 0; i < live.length; i++) for (let k = 0; k < 3; k++) {
+        const sec = live[i][k], x = sec[0], z = sec[1], yaw = sec[2], y = sec[3], ox = p.x - x, oz = p.z - z;
         if (ox * ox + oz * oz > 64 || p.y > y + BODY_H || p.y + h < y) continue;
         const fx = Math.cos(yaw), fz = -Math.sin(yaw), lx = ox * fx + oz * fz, lz = -ox * fz + oz * fx;
         const hx = SEC / 2 + r, hz = HALF_W + r;

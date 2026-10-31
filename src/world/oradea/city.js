@@ -12,8 +12,8 @@
 // DETAIL, spawn, the world object), port them here by hand.
 // ?phone (phone.js): the centre only – map.json cut to the disc round Piața Unirii before anything is built (the ground
 // workers get the box to keep), the sites that stand outside it skipped and the meshes of the rest that lie outside it
-// dropped, fewer people and cars; the places are resolved from the whole map first, so the maps and the explore quest
-// keep every sight. DETAIL has the phone ladder's levels (phone, minimal).
+// dropped, fewer people and cars, the car parks laid out while loading; the places are resolved from the whole map
+// first, so the maps and the explore quest keep every sight. DETAIL has the phone ladder's levels (phone, minimal).
 import * as THREE from 'three';
 import { loadCityTextures } from '../../kit/textures.js';
 import { createFacadeMaterial } from '../facade.js';
@@ -251,6 +251,9 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
     traffic.attachSolids(collision, collision.groundHeight);
     traffic.sim.addParkingSpots(sites.flatMap((s) => s.parked ?? []));
     carParks = guard('car parks', () => buildCarParks({ map, occ, heightAt, solids: collision, sites, scene: root, renderer }));
+    // the phone lays its centre's lots out now (~100, ~0.2 s on a desktop): laid out on first approach, one lot took up to
+    // ~80 ms of a phone frame and the stall lines' mesh compiled its shader mid-drive
+    if (carParks && phone) guard('car parks layout', () => { for (const L of carParks.lots) carParks.layout(L); });
     if (carParks) traffic.sim.addParkingLots(carParks.lots);
     traffic.sim.setDebris(debris);
     if (people) traffic.setPeds(people);
