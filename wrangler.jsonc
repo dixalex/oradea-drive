@@ -1,9 +1,12 @@
-// Cloudflare deploy of the Oradea build: a Worker with static assets only (no server code). `npm run deploy:oradea`
-// builds dist/ with VITE_CITY=oradea and uploads it. Limits: 25 MiB per file, 20,000 files (free plan).
+// Cloudflare deploy of the Oradea build: a Worker with the static assets and one small endpoint, the anonymous event
+// counter (worker/oradea.js -> Workers Analytics Engine, dataset oradea_drive_events). `npm run deploy:oradea` builds
+// dist/ with VITE_CITY=oradea and uploads it. Limits: 25 MiB per file, 20,000 files (free plan).
 {
   "name": "oradea-drive",
   "compatibility_date": "2025-09-01",
-  "assets": { "directory": "./dist" },
+  "main": "worker/oradea.js",
+  "assets": { "directory": "./dist", "binding": "ASSETS" },
+  "analytics_engine_datasets": [{ "binding": "EVENTS", "dataset": "oradea_drive_events" }],
   // the public address under the organiser's domain (zone drumulvietii.ro on this account); workers.dev keeps working
   "routes": [{ "pattern": "oradea.drumulvietii.ro", "custom_domain": true }],
   "workers_dev": true
