@@ -122,6 +122,12 @@ export const PLACES = [
   { id: 'okanyi', kind: 'improved', icon: '🏛️', bld: [423358089], name: t('Vila Okányi-Schwartz', 'Okányi-Schwartz Villa'),
     note: t('Vilă Secession din 1912 (arh. Komor Marcell și Jakab Dezső, constructor Sztarill Ferenc), sediul Camerei de Comerț și Industrie Bihor din 2014',
       'A Secession villa of 1912 (architects Marcell Komor and Dezső Jakab, builder Ferenc Sztarill), the seat of the Bihor Chamber of Commerce and Industry since 2014') },
+  // the green and family places (sites/verde): both have visitoradea.com pages; the zoo has no building, so a small ring at its gate
+  { id: 'ciuperca', kind: 'sight', icon: '🍄', bld: [331203796], name: t('Dealul Ciuperca', 'Ciuperca Hill'),
+    note: t('Belvedere și restaurant pe deal · Str. Graurilor 80', 'Viewpoint and restaurant on the hill · Str. Graurilor 80') },
+  { id: 'zoo', kind: 'sight', icon: '🦌', xz: [-396.5, 824.8], ring: [-404.5, 819.8, -388.5, 819.8, -388.5, 829.8, -404.5, 829.8],
+    name: t('Grădina Zoologică Oradea', 'Oradea Zoo'),
+    note: t('Parc cu animale și capela contelui Rhédey · Calea Matei Basarab 30', 'A park with animals and Count Rhédey\'s chapel · Calea Matei Basarab 30') },
   sight('sfnicolae', '⛪', [286245385], t('Catedrala greco-catolică Sfântul Nicolae', 'St Nicholas Greek Catholic Cathedral'),
     t('Lângă Palatul Episcopal Greco-Catolic', 'Next to the Greek Catholic bishop\'s palace')),
   sight('garaoradea', '🚉', [242379148], t('Gara Oradea', 'Oradea railway station'),

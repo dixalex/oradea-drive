@@ -1,0 +1,19 @@
+Follow /Users/alexandertinyaev/Sites/oradea-drive/tools/oradea/agents/BRIEF.md (read it fully first; the agent prompt overrides its stale parts: the dev server port, the shot tool path, the neighbours' heights).
+
+Slug: verde
+
+Oradea's green and family places: Ciuperca hill and the zoo. Done, not yours: everything in src/world/oradea/sites/*.js (check every OSM id you take against all their skip lists first), the generic park furniture, statues and fountains of src/world/oradea/parks.js (make your clear(x, z) true where you build, so it draws nothing there), the trams (src/world/oradea/trams.js; keep clear of the tracks on Calea Matei Basarab).
+
+Build, in this order (finish and screenshot each before the next; a finished subset beats a half-built whole):
+1. Dealul Ciuperca, Str. Graurilor 80: the restaurant and belvedere on the hilltop, OSM way 331203796 (1,152 m²), the viewpoint node 1311238516. The hill was renewed in the early 2020s (the restaurant, the terraces, the stairs and paths down the slope, the lake with its fountain at the foot): model what the city's and visitoradea's photos show today, the hilltop building first, then the terraces and stairs, then the lake if time is left. It is 92 m inside the phone's 1800 m disc edge: keep it inside. Terrain: the DEM has the hill; do not reshape terrain beyond a level pad under the building (a guarded shape hook, as other sites do).
+2. Grădina Zoologică Oradea, Calea Matei Basarab 30, the zoo area OSM way 290565675 (no building footprint): the light scope only: the entrance gate and ticket house on the street, the Rhédey chapel (the count's early-19th-century chapel among the enclosures; quest card 'zoo-chapel' in src/world/oradea/quests.js, its `at` is [47.050695, 21.916069]), the paths, and a few enclosures (fences, a pond, shelters; no animals). Not the full 7 ha.
+3. If time is left: Colegiul Național «Emanuil Gojdu» (quest card 'gojdu', ll [47.054551, 21.938052]): find its OSM footprint, check it is unclaimed, build the street front.
+
+Sources: visitoradea.com/what-to-see (Ciuperca Hill, the Zoo), oradea.ro, zoo-oradea / the zoo's own site, ro.wikipedia, Wikimedia Commons, Street View, the Digi24 article linked from the zoo-chapel card.
+
+Places (put them in SITE.places; the orchestrator moves them into places.js; all text bilingual via t()):
+- 'sight' (each has its own visitoradea.com page): 'ciuperca' (Dealul Ciuperca), 'zoo' (Grădina Zoologică). Check places.js for clashes first. 'gojdu' only as 'improved' (pick a free id, e.g. 'colegiulgojdu').
+- No brand names or restaurant names on signs unless they are on the building today; no logos.
+- Dates: a range where sources disagree, never one firm year they don't share.
+
+Budget: Ciuperca ≤ 20k vertices, the zoo ≤ 20k, Gojdu ≤ 12k; ≤ 12 draw calls for the whole site (share materials and atlases); any texture sheet ≤ 2048 x 2048, half size on the phone (as sites/unirii-est.js does).

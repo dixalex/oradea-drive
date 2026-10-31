@@ -11,6 +11,7 @@ export const PEEK = {
   moskovitsadolf: site('unirii-est'), kovats: site('unirii-est'), iuliumaniu: site('unirii-est'), alecsandri: site('unirii-est'),
   poynar: site('ferdinand-olosig'), fuchsl: site('ferdinand-olosig'), transilvania: site('ferdinand-olosig'),
   adorjan: site('ferdinand-olosig'), rimanoczy: site('ferdinand-olosig'),
+  ciuperca: site('verde'), zoo: site('verde'),
   muzeuady: site('traian-muzee'), muzeuvulcan: site('traian-muzee'), casalazar: site('traian-muzee'), episcopiaortodoxa: site('traian-muzee'), okanyi: site('traian-muzee'),
   garaoradea: site('gara'), oradeaarena: site('gara'),
   catedralaortodoxa: site('orthodox'), sftreime: site('orthodox'), sfandrei: site('orthodox'), sfmihailgavriil: site('orthodox'), bisericalemn: site('orthodox'),
