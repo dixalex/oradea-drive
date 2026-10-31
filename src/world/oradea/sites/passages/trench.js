@@ -737,7 +737,8 @@ export function buildGroup(base, st) {
         const run = need.slice(j, k + 1), s0 = Math.max(0, run[0].s - 0.25), s1 = Math.min(L, run[run.length - 1].s + 0.25);
         const x0 = ax + ux * s0, z0 = az + uz * s0, x1 = ax + ux * s1, z1 = az + uz * s1;
         const f0 = run[0].f, f1 = run[run.length - 1].f, t0 = run[0].top, t1 = run[run.length - 1].top;
-        const b0 = run[0].lo + 0.5, b1 = run[run.length - 1].lo + 0.5, ox = -inx * PAR_T, oz = -inz * PAR_T;
+        // the face from the floor (street outside), or over a tunnel from just under the slab's top (its edge, no dark slit)
+        const bot = (q) => (q.lo === q.f - 0.5 ? q.f : q.top - 0.6), b0 = bot(run[0]), b1 = bot(run[run.length - 1]), ox = -inx * PAR_T, oz = -inz * PAR_T;
         col(C.wall).face([[x0, b0, z0], [x1, b1, z1], [x1, t1 + PAR, z1], [x0, t0 + PAR, z0]], [inx, 0, inz]);
         col(C.cap).face([[x0, t0 + PAR, z0], [x1, t1 + PAR, z1], [x1 + ox, t1 + PAR, z1 + oz], [x0 + ox, t0 + PAR, z0 + oz]], [0, 1, 0]);
         col(C.wall).face([[x0 + ox, t0 - 0.2, z0 + oz], [x1 + ox, t1 - 0.2, z1 + oz], [x1 + ox, t1 + PAR, z1 + oz], [x0 + ox, t0 + PAR, z0 + oz]], [-inx, 0, -inz]);

@@ -1,0 +1,21 @@
+Follow /Users/alexandertinyaev/Sites/oradea-drive/tools/oradea/agents/BRIEF.md (read it fully first; the agent prompt overrides its stale parts: the dev server port, the shot tool path, the neighbours' heights).
+
+Slug: ferdinand-olosig
+
+Oradea's Art Nouveau corners round Piața Ferdinand (the theatre square) and in Olosig across the river. Done, not yours: the theatre and the square itself (sites/ferdinand), the Black Eagle Palace and City Hall (sites/primaria), Calea Republicii with Moskovits Miksa and Ullmann (sites/republicii), the east side of Piața Unirii and Strada Vasile Alecsandri (sites/unirii-est). Check every OSM id you take against the skip lists of all src/world/oradea/sites/*.js first.
+
+Build, in this order (finish and screenshot each before the next):
+1. Casa Poynár, OSM way 6481083 (Piața Ferdinand 1 / Str. N. Grigorescu 6; tagged `house`, probably the whole corner plot: split it into the real building and its neighbours if it is). The corner tower with a bulbous cupola where Calea Republicii starts, semicircular top-floor windows, curved triangular pediments with round windows, butterfly motifs on the balconies, the raven relief on the square front. 1907–1911 for Ioan Poynár, Ferenc Sztarill (oradeaheritage.ro/casa-poynar/; ro.wikipedia says April–November 1907: give the range, not one year). Quest card 'poynar' (src/world/oradea/quests.js) stands at its door.
+2. Palatul Füchsl, OSM way 1534824825 (Str. Mihai Viteazul). Sept 1902–April 1903 for the wine-merchant brothers, Zoltán Bálint and Lajos Jámbor; two storeys, the tower over a rounded corner, a wavy cornice, vine and grape ornament, the «FT» letters, kidney-shaped attic windows. The tram runs 15 m away: keep clear of it. Quest card 'fuchsl'.
+3. Hotel Transilvania (opened 1904 as «Pannonia»), OSM way 421787916 (Str. Teatrului 2, the west side of the theatre square). Guttman József, 1903–1904; large arched ground-floor openings, the pastoral and floral relief frieze, paired top windows, floral cartouches. The hotel's name may show as it appears on the building today; no other brands.
+4. Casele Adorján I and II, OSM ways 421787914 and 489773508 (Str. Patrioților 4–6 / Str. Moscovei, Olosig). Quest card 'adorjan'.
+5. The Rimanóczy Hotel and Baths with the Royal café, OSM ways 21056820 and 421787874 (Str. Libertății 8 / N. Grigorescu / I. Vulcan; which way is which is not confirmed: settle it from addresses and photos). It is wrapped in scaffold nets until about December 2026: model the restored state from older photos. Quest card 'rimanoczy' if it is this building (check quests.js).
+6. Optional, if time is left: the Lévay house (Piața Ferdinand, the south-east side by the bridgehead; find its OSM id) and the Rimanóczy Sr. palace (Parcul Traian 1 at Calea Republicii; it may sit among the Republicii lots: if sites/republicii already skips it, leave it).
+
+Sources: oradeaheritage.ro (a page per building), ro.wikipedia / hu.wikipedia, Wikimedia Commons categories (Füchsl Palace, Transilvania Hotel, Poynár House, Adorján House, Rimanóczy Hotel), Street View. Reuse src/world/oradea/sites/civic/bays.js and fill.js for repeated bays if they fit (import, never edit).
+
+Places (put them in SITE.places; the orchestrator moves them into places.js; all text bilingual via t()):
+- A building becomes a 'sight' only if visitoradea.com (the city's official tourism site) has its own page for it; otherwise 'improved'. Check each and say which in the report. Ids: 'poynar', 'fuchsl', 'transilvania', 'adorjan', 'rimanoczy' (places.js may already use some of these for other places: check, and pick a free id if so; quest card ids live in quests.js, separately).
+- Dates: give a range where sources disagree, never one firm year they don't share.
+
+Budget: Poynár and the Rimanóczy complex ≤ 25k vertices each, the others ≤ 15k each; ≤ 12 draw calls for the whole site (share materials and atlases). All of it is inside the phone's 1800 m disc, so it ships to phones (whole frame budget ~150–200 draw calls).
