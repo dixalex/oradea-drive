@@ -4,7 +4,8 @@
 //     fixed). The shader (material.js) multiplies a palette colour into the grey wherever the mask says wall / trim.
 //     A.cell(name, wM, hM) -> Cx    the next free rectangle wM x hM metres (S px per metre), registered under `name`
 //     A.uv(name) -> { u0, v0, u1, v1 }  inset by half a texel, v up (CanvasTexture flipY)
-//     A.textures() -> { map, mask }
+//     A.textures(scale = 1) -> { map, mask }   scale < 1: the sheets go to the GPU smaller (the phone tier: half, a quarter
+//       of the memory; the UVs are fractions, so nothing else changes)
 //   Cx: drawing in metres inside one cell, origin bottom-left, y up. Every shape is painted into both canvases with the
 //     current style:  wall(v) / trim(v) tinted greys (v 0..1),  fix('#hex', lit?) a fixed colour (lit: the mask marks it
 //     as a window the night light shows through),  dif('rgba(..)') the colour canvas only (shadows, highlights).
@@ -40,8 +41,9 @@ export class Atlas {
     const e = 0.75; // px inset: bilinear never reaches the gutter
     return { u0: (c.x + e) / this.W, u1: (c.x + c.w - e) / this.W, v0: 1 - (c.y + c.h - e) / this.H, v1: 1 - (c.y + e) / this.H, w: c.w / S, h: c.h / S };
   }
-  textures() {
-    const map = new THREE.CanvasTexture(this.cvD), mask = new THREE.CanvasTexture(this.cvM);
+  textures(scale = 1) {
+    const down = (cv) => { if (scale >= 1) return cv; const c = Object.assign(document.createElement('canvas'), { width: Math.max(1, Math.round(cv.width * scale)), height: Math.max(1, Math.round(cv.height * scale)) }); c.getContext('2d').drawImage(cv, 0, 0, c.width, c.height); return c; };
+    const map = new THREE.CanvasTexture(down(this.cvD)), mask = new THREE.CanvasTexture(down(this.cvM));
     map.colorSpace = THREE.SRGBColorSpace; mask.colorSpace = THREE.NoColorSpace;
     for (const t of [map, mask]) { t.anisotropy = 8; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; }
     return { map, mask };

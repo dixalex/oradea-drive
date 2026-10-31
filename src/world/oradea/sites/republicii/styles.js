@@ -274,9 +274,9 @@ function rails(A) {
   c.end();
 }
 
-export function buildAtlas(r) {
+export function buildAtlas(r, scale = 1) { // scale: the GPU copy's size (paint.js textures)
   const A = new Atlas(4096, 2048);
   lilien(A, r); stern(A, r); apollo(A, r); baroque(A, r); wagner(A, r); plain(A, r); modern(A, r); civic(A, r);
   shops(A, r); rails(A); heroCells(A, r);
-  return { A, textures: A.textures(), uv: (n) => A.uv(n) };
+  return { A, textures: A.textures(scale), uv: (n) => A.uv(n) };
 }

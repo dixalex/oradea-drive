@@ -8,6 +8,7 @@ export const PEEK = {
   cetateoradea: site('cetate', true),
   bazilica: site('baroc', true), palatulbaroc: site('baroc', true), sirulcanonicilor: site('baroc', true),
   calearepublicii: site('republicii'), moskovits: site('republicii'), ullmann: site('republicii'),
+  moskovitsadolf: site('unirii-est'), kovats: site('unirii-est'), iuliumaniu: site('unirii-est'), alecsandri: site('unirii-est'),
   garaoradea: site('gara'), oradeaarena: site('gara'),
   catedralaortodoxa: site('orthodox'), sftreime: site('orthodox'), sfandrei: site('orthodox'), sfmihailgavriil: site('orthodox'), bisericalemn: site('orthodox'),
   emanuel: site('baptist', true), bbso: site('baptist', true),

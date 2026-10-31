@@ -46,7 +46,7 @@ export const SITE = {
       for (const rd of roads) if (nearOnLine(rd.p, x, z).d < rd.w / 2 + 8) return true;
       return false;
     };
-    const atlas = buildAtlas(r2), pal = new Palette(), K = makeKit(atlas, pal);
+    const atlas = buildAtlas(r2, base.map.phoneCentre ? 0.5 : 1), pal = new Palette(), K = makeKit(atlas, pal); // the phone: a half-size sheet on the GPU
     const ctx = { K, rnd, g, index, isPublic, S, pal };
     const foots = [];
     let lots = 0;
