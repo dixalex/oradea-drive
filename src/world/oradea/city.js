@@ -197,6 +197,9 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
   await runSites(true);
   const sites = built.filter(Boolean);
   const movers = sites.filter((s) => s.collide);
+  // the first moving site the body touches; a plain loop: collideDynamic runs in every car substep, and a reduce built
+  // a closure per call (phone GC pauses)
+  const moversHit = (p, r, h) => { for (let i = 0; i < movers.length; i++) { const hit = movers[i].collide(p, r, h); if (hit != null) return hit; } return null; };
   stage('sites', 0.5, t('Clădiri…', 'Buildings…'));
   const Bld = await bldP;
   const B = Bld.B;
@@ -289,7 +292,7 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
     groundHeight: (x, z, yHint) => collision.groundHeight(x, z, yHint),
     surfaceAt: (x, z, yHint) => collision.surfaceAt(x, z, yHint),
     spawn, spawnYaw, carSpawn, carSpawnYaw, viewpoints,
-    collideDynamic: traffic || movers.length ? (p, r, h) => traffic?.collideDynamic(p, r, h) ?? movers.reduce((hit, s) => hit ?? s.collide(p, r, h), null) : null,
+    collideDynamic: traffic || movers.length ? (p, r, h) => traffic?.collideDynamic(p, r, h) ?? moversHit(p, r, h) : null,
     ram(q) {
       const r = traffic?.sim?.ram ? traffic.sim.ram(q) : ramZero();
       const tb = treeBreak.hit(q);

@@ -28,6 +28,7 @@
 //                                          into the ride the "hold Shift – turbo" tip for a minute or until the wings
 //                                          come out (never again once Shift was used: cherkasy.turbo in localStorage)
 //   hud.setObjective(pos | null)           world position (copied); non-finite -> cleared
+//   hud.setCompass(on), hud.setMapHz(hz)  optional lighter HUD: no compass drawing, the minimap at hz (default 25)
 //   hud.setMarkers([{ x, z, color, label }])  replaces the mission markers (minimap discs)
 //   hud.waypoint { x, z } | null           the player's own mark, set by a click on the big map (a click on it clears it;
 //                                          reaching it within WAYPOINT_REACH m clears it too); a flag on the minimap, a
@@ -135,6 +136,7 @@ export function createHud({ player, world, camera, container = globalThis.docume
     carKey: $('.hud-carkey'), carT: $('.hud-carkey span'), gasFly: $('.hud-gasfly'), gas: $('.hud-gas'), gasI: $('.hud-gas i'), gasB: $('.hud-gas b'), gasH: $('.hud-gas .h'),
   };
   const mapG = el.map.getContext('2d'), cmpG = el.compass.getContext('2d');
+  let compassOn = true, mapHz = MAP_HZ; // hud.setCompass / setMapHz
 
   // ---------------------------------------------------------------- state
   let visible = true, helpOn = false; // the card opens on H only: the consent card on the loading screen already names H
@@ -547,10 +549,13 @@ export function createHud({ player, world, camera, container = globalThis.docume
       if (Number.isFinite(yaw)) camYaw = yaw; // a broken camera frame keeps the last heading
       if (painter.pending) lastMapMs = painter.work(3);
       mapAcc += dt;
-      if (mapAcc >= 1 / MAP_HZ) { mapAcc = 0; drawMap(); }
-      drawCompass(f);
+      if (mapAcc >= 1 / mapHz) { mapAcc = 0; drawMap(); }
+      if (compassOn) drawCompass(f);
       updatePin();
     },
+    // a lighter HUD (a city build's phone tier): the compass strip hidden there needs no drawing, the minimap a lower rate
+    setCompass(on) { compassOn = !!on; },
+    setMapHz(hz) { mapHz = Math.max(1, +hz || MAP_HZ); },
     stats: () => ({ tilesPending: painter.pending, mapMs: +lastMapMs.toFixed(2), features: painter.index().valid, places: painter.places.length, cache: painter.stats() }),
     dispose() { globalThis.removeEventListener?.('resize', onResize); bigmap.dispose(); root.remove(); },
   };

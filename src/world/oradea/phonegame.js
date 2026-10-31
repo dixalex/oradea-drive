@@ -18,6 +18,7 @@
 //     - the centre's soft edge (phone.js boundary on the car each frame), the big map's teleport only inside it, the
 //       car brought home when it starts outside (a desktop save, ?at=)
 //     - the camera's far plane at FAR (past it everything is lost in the phone haze)
+//     - a lighter HUD: the hidden compass strip is not drawn (hud.setCompass), the minimap redraws at 15 Hz (hud.setMapHz)
 //     - while no shadow maps are drawn (the phone levels: render/shadows.js), a soft blob under the car; in the chase view
 //       the Cybertruck's cabin and driver (behind its dark glass) leave the main camera's layer: ~10 draw calls; the car's
 //       transparent double-sided materials (glass, jet flames) draw in one pass
@@ -149,6 +150,8 @@ export function touchTips(text, kbd = false) {
 
 export function startPhone(ctx, { guard = null, ready = Promise.resolve() } = {}) {
   const doc = globalThis.document, { input, hud, car, world, camera } = ctx;
+  // the compass strip is hidden here (CSS below), so it is not drawn either; the small minimap redraws at 15 Hz, not 25
+  hud.setCompass?.(false); hud.setMapHz?.(15);
   const style = doc.createElement('style');
   style.textContent = touchCss + CSS;
   doc.head.appendChild(style);

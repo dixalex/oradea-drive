@@ -266,6 +266,7 @@ export function buildParks({ root, map, solids: S, heightAt, onAsphalt = () => f
   if (bronze.v) add(bronze.build(), new THREE.MeshStandardMaterial({ color: 0x6a6450, roughness: 0.5, metalness: 0.6 }), 'parks-bronze');
   if (water.v) add(water.build(), new THREE.MeshStandardMaterial({ color: 0x41707c, roughness: 0.06, metalness: 0.2, transparent: true, opacity: 0.88 }), 'parks-water', false);
   const jetMat = new THREE.MeshStandardMaterial({ color: 0xeaf4f6, roughness: 0.2, transparent: true, opacity: 0.5, depthWrite: false, emissive: 0x9fd0e0, emissiveIntensity: 0.1, side: THREE.DoubleSide });
+  jetMat.forceSinglePass = true; // thin see-through jets: one pass, not three's back-then-front two (fewer draws and programs)
   if (jets.v) add(jets.build(), jetMat, 'parks-jets', false);
   for (const D of [steel, stone, water, jets]) D.free(); // the update closures below share this scope (bronze is an SG)
 
