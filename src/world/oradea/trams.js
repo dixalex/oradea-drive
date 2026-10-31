@@ -175,7 +175,10 @@ export function buildTrams({ map, root, heightAt, ground, detailMat }) {
   PG.setPart(DP.STEEL).setColor('#4a5056').cyl(0, 0, 0, 0.13, 0.09, 7.2, 8);
   PG.tube([0, 6.4, 0], [0, 6.4, 1], 0.05, 5); // the arm along local +z, scaled to reach the track
   const poleGeo = PG.build({ part: true });
-  const mat = detailMat ?? new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7 });
+  // the instanced poles and cars get their own handle on the city-detail shader (same program, no extra compile): one
+  // material on instanced and plain meshes makes three switch programs twice a frame (getParameters, garbage)
+  const mat = detailMat ? Object.assign(detailMat.clone(), { onBeforeCompile: detailMat.onBeforeCompile, customProgramCacheKey: detailMat.customProgramCacheKey })
+    : new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7 });
   const poleMesh = new THREE.InstancedMesh(poleGeo, mat, Math.max(1, poles.length));
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3();
   poles.forEach(([x, z, yaw, o], i) => {
@@ -188,7 +191,7 @@ export function buildTrams({ map, root, heightAt, ground, detailMat }) {
 
   const group = Object.assign(new THREE.Group(), { name: 'oradea-trams' });
   root.add(group);
-  group.add(Object.assign(new THREE.Mesh(releaseOnUpload(T.build({ part: true, uv: false })), mat), { name: 'tram-track', receiveShadow: true }));
+  group.add(Object.assign(new THREE.Mesh(releaseOnUpload(T.build({ part: true, uv: false })), detailMat ?? mat), { name: 'tram-track', receiveShadow: true }));
   const trackV = T.v; T.free(); // the trams' update closure shares this scope
   group.add(poleMesh);
   const wireGeo = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(wire, 3));

@@ -231,11 +231,11 @@ export function startPhone(ctx, { guard = null, ready = Promise.resolve() } = {}
   }
 
   // ---- the car: a blob while there are no shadow maps, no cabin in the chase view
-  // its see-through double-sided materials (the glass, the jet flames) draw in one pass, not three's back-then-front two:
-  // 3 draw calls fewer (7 in flight), and no program re-derivation twice per draw. Set before the shader warm-up, so the
-  // one-pass programs are the ones it compiles
+  // see-through double-sided materials (the car's glass and jet flames, the station's and the arena's glass) draw in one
+  // pass, not three's back-then-front two: 3 draw calls fewer for the car (7 in flight), and no program re-derivation
+  // twice a frame per material. Set before the shader warm-up, so the one-pass programs are the ones it compiles
   const onePass = (root) => root.traverse((o) => { for (const m of [].concat(o.material ?? [])) if (m.transparent && m.side === THREE.DoubleSide) m.forceSinglePass = true; });
-  onePass(car.model.object);
+  onePass(ctx.scene); onePass(car.model.object);
   const blob = createBlob(ctx.renderer);
   ctx.scene.add(blob);
   let cabin = [], cabinOf = null, cabinOn = true;

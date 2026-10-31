@@ -73,7 +73,9 @@ export const SITE = {
     // ---- materials, meshes
     const M = makeMats(r, wash, atlas);
     const out = finishSet(group, B, M);
-    const jetMat = new THREE.MeshBasicMaterial({ color: 0xe4f4fb, transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide });
+    // one pass (forceSinglePass): thin faint jets with no depth write look the same, and three's two-pass draw of a
+    // see-through double-sided material re-derives its program twice a frame
+    const jetMat = new THREE.MeshBasicMaterial({ color: 0xe4f4fb, transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true });
     group.add(Object.assign(new Mesh(jets.build(), jetMat), { name: 'unirii-jets' }));
     const moonMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.35, metalness: 0.55, emissive: 0xffc060, emissiveIntensity: 0 });
     const moonMesh = Object.assign(new Mesh(moon.moon.geo, moonMat), { name: 'unirii-moon' });

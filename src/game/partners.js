@@ -30,8 +30,10 @@ export function createPartners({ world, player, scene, container = globalThis.do
   const ringGeo = new THREE.RingGeometry(0.9, 1, 64).rotateX(-Math.PI / 2);
   const wallGeo = new THREE.CylinderGeometry(1, 1, 1, 48, 1, true).translate(0, 0.5, 0);
   const spots = list.map((q) => {
-    const mRing = new THREE.MeshBasicMaterial({ color: PINK, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
-    const mWall = new THREE.MeshBasicMaterial({ color: PINK, alphaMap: alpha, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    // additive and no depth write, so one pass draws the same picture as three's back-then-front two (which also
+    // re-derive the shader program twice a frame per material)
+    const mRing = new THREE.MeshBasicMaterial({ color: PINK, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true });
+    const mWall = new THREE.MeshBasicMaterial({ color: PINK, alphaMap: alpha, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true });
     const g = new THREE.Group(); g.name = `partner-${q.id}`;
     const ring = new THREE.Mesh(ringGeo, mRing); ring.scale.setScalar(RING_R); ring.position.y = 0.12;
     const wall = new THREE.Mesh(wallGeo, mWall); wall.scale.set(RING_R, 1.4, RING_R);

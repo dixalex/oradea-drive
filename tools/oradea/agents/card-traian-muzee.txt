@@ -1,0 +1,24 @@
+Follow /Users/alexandertinyaev/Sites/oradea-drive/tools/oradea/agents/BRIEF.md (read it fully first; the agent prompt overrides its stale parts: the dev server port, the shot tool path, the neighbours' heights).
+
+Slug: traian-muzee
+
+The memorial museums and bronzes round Parcul Traian and the streets beside it. Done, not yours: Calea Republicii (sites/republicii), Piața Ferdinand and its Art Nouveau corners (sites/ferdinand, sites/ferdinand-olosig: the Rimanóczy hotel and baths are built), the Palace of Justice, the Postal Palace and the Prefecture (sites/civic), Holy Trinity church in the park (sites/orthodox), the underpass under the park's south edge (sites/passages-magheru). Check every OSM id you take against the skip lists of all src/world/oradea/sites/*.js first. Not to build: the Freemasons' Temple (the owner's decision), and the Eva memorial and anything on the two Jewish-history quest cards held in src/world/oradea/quests.js (HELD).
+
+Build, in this order (finish and screenshot each before the next; a finished subset beats a half-built whole):
+1. The Ady Endre Memorial Museum, Parcul Traian 1: the small pavilion of the former Müller café, the museum since 26 May 1955, renewed 2019–2020 (the building's date is disputed: 1869 or an 1896 kiosk, so give neither as fact). OSM tags the museum on way 1534596467; the real footprint is Overture 3000011176 (241 m², in map_buildings.json). With it the Ady statue (OSM node 4827014957, ~30 m away) and the «Holnap» group (node 4827012515; quest card 'holnap') in bronze, from photos. Quest card 'ady-cafe' stands here.
+2. The Iosif Vulcan Memorial Museum, Str. Iosif Vulcan 14 (the editor of «Familia», where Eminescu first published). OSM way 421787868 is a 3,035 m² block: model the museum house and leave the rest of the block generic (split the footprint, keep the rest under generic extrusion if you can, or model it plainly). Quest card 'vulcan'.
+3. The Aurel Lazăr Memorial House, Str. Aurel Lazăr 13 (where the 1918 union declaration was drafted), OSM way 421787845. Quest card 'lazar'.
+4. The Orthodox Episcopal Palace, Str. Roman Ciorogariu, OSM way 1525803455: built 1905 by Kálmán Rimanóczy Jr as a family villa, a Venetian-style brick-and-render front with three-arch first-floor windows; the Orthodox Church's since 1921.
+5. The Okányi-Schwartz villa (the Bihor Chamber of Commerce since 2014), Str. Mihai Eminescu 25A, OSM way 423358089: 1912, Komor and Jakab, built by Sztarill (oradeaheritage.ro/camera-de-comert-si-industrie-bihor/).
+6. The Czárán bronze (node 4827012513; quest card 'czaran'), and if time is left the Mihai Viteazul equestrian statue in Piața Emanuil Gojdu (find its OSM node; it stands by the Gojdu underpass works: keep clear of sites/passages-gojdu's cut).
+src/world/oradea/parks.js draws a generic figure at every OSM statue / memorial point that no site's clear(x, z) covers: make clear(x, z) return true at each bronze you model (tests/oradea-parks.test.mjs shows the check).
+
+Sources: oradeaheritage.ro, visitoradea.com/what-to-see (the museums), muzeultarii crisurilor (MTC) pages for the memorial museums, ro.wikipedia, Wikimedia Commons, Street View. Bronze figures: low-poly but recognisable (pose, plinth, inscription plate), in one shared bronze material; see src/world/cherkasy/bohdan.js for the bronze helpers.
+
+Places (put them in SITE.places; the orchestrator moves them into places.js; all text bilingual via t()):
+- 'sight' (each has its own visitoradea.com page): 'muzeuady' (Muzeul Memorial Ady Endre), 'muzeuvulcan' (Muzeul Memorial Iosif Vulcan), 'casalazar' (Casa Memorială Aurel Lazăr). Check places.js for clashes first.
+- 'improved': 'episcopiaortodoxa' (Palatul Episcopiei Ortodoxe), 'okanyi' (Vila Okányi-Schwartz).
+- The bronzes get no place of their own (the quest cards point at them).
+- Dates: a range where sources disagree, never one firm year they don't share.
+
+Budget: each building ≤ 12k vertices, each bronze ≤ 6k; ≤ 12 draw calls for the whole site (share materials and atlases); any texture sheet ≤ 2048 x 2048, half size on the phone (as sites/unirii-est.js does). All of it is inside the phone's 1800 m disc.
