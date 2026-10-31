@@ -20,6 +20,7 @@
 //       life.traffic (sim: links, VTYPES, makeMesh, cars, knock, massOf, dent) and life.crowd (people: spawnActor,
 //       removeActor, hitBox). Without traffic the lane points come from map.roads and the chase is not offered;
 //       without people mugging and taxi are not offered.
+//       world.playable(x, z) (optional): false where no mission spot may go (a world smaller than its lanes)
 //     player: the car (position, velocity, yaw, onEvents); hud: src/ui/hud.js (setObjective, setMarkers, mission.*)
 //     input: src/core/input.js (actions missionAbort / missionSkip / missionRetry are bound here); without it the
 //       keys are read from window keydown
@@ -140,7 +141,7 @@ export function createMissions({ world, player, hud = null, scene, input = null 
     for (let t = 0; t < tries; t++) {
       const L = Ls[Math.floor(Math.random() * Ls.length)], s = L.len * (0.3 + Math.random() * 0.4);
       const px = L.ax + L.dx * s, pz = L.az + L.dz * s, d = Math.hypot(px - x, pz - z);
-      if (d < rMin || d > rMax || water(px, pz)) continue;
+      if (d < rMin || d > rMax || water(px, pz) || (W.playable && !W.playable(px, pz))) continue; // a world may be smaller than its lanes (Oradea's phone centre)
       return { x: px, z: pz, dx: L.dx, dz: L.dz, L, s };
     }
     return null;

@@ -292,6 +292,8 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
     groundHeight: (x, z, yHint) => collision.groundHeight(x, z, yHint),
     surfaceAt: (x, z, yHint) => collision.surfaceAt(x, z, yHint),
     spawn, spawnYaw, carSpawn, carSpawnYaw, viewpoints,
+    // the phone's centre: mission spots (calls, fares, chases) stay 60 m inside its soft edge; its lanes run past it
+    playable: phone ? (x, z) => inDisc(x, z, phone, -60) : null,
     collideDynamic: traffic || movers.length ? (p, r, h) => traffic?.collideDynamic(p, r, h) ?? moversHit(p, r, h) : null,
     ram(q) {
       const r = traffic?.sim?.ram ? traffic.sim.ram(q) : ramZero();
