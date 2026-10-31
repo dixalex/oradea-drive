@@ -164,21 +164,18 @@ export function createHud({ player, world, camera, container = globalThis.docume
       c.width = Math.round(cw * dpr); c.height = Math.round(chh * dpr);
     }
     mapAcc = 1;
-    el.botKey.style.left = `${el.helpKey.offsetLeft + el.helpKey.offsetWidth + 8}px`; // right next to the H chip
-    el.photoKey.style.left = `${el.botKey.offsetLeft + el.botKey.offsetWidth + 8}px`;
-    el.homeKey.style.left = `${el.photoKey.offsetLeft + el.photoKey.offsetWidth + 8}px`;
-    placeCar();
-    placeRadio();
+    placeRow();
   }
-  function placeCar() { // the car chip's text changes length with the lock: the chips after it follow
-    el.carKey.style.left = `${el.homeKey.offsetLeft + el.homeKey.offsetWidth + 8}px`;
-    el.newsKey.style.left = `${el.carKey.offsetLeft + el.carKey.offsetWidth + 8}px`;
-    placeRadio();
+  // the chip row after the H chip: each chip's left is the previous chip's place + width + a gap. Every width (and
+  // margin) is read first and the lefts written after, so a change costs one layout: writing a left and reading the next
+  // chip's offset in turn forced one per chip, and a found sight (setGarage) froze a phone frame for up to ~90 ms
+  const ROW = [el.helpKey, el.botKey, el.photoKey, el.homeKey, el.carKey, el.newsKey, el.radioKey, el.radioNext], GAP = [0, 8, 8, 8, 8, 8, 8, 6];
+  function placeRow() {
+    const w = ROW.map((e) => e.offsetWidth), m = ROW.map((e) => parseFloat(globalThis.getComputedStyle?.(e)?.marginLeft) || 0);
+    let x = ROW[0].offsetLeft; // the H chip's place comes from the stylesheet
+    for (let k = 1; k < ROW.length; k++) { x += w[k - 1] + GAP[k]; ROW[k].style.left = `${x}px`; x += m[k]; } // x: the chip's offsetLeft
   }
-  function placeRadio() { // last in the row: the radio chip grows with the track name and the "next" chip follows it
-    el.radioKey.style.left = `${el.newsKey.offsetLeft + el.newsKey.offsetWidth + 8}px`;
-    el.radioNext.style.left = `${el.radioKey.offsetLeft + el.radioKey.offsetWidth + 6}px`;
-  }
+  const placeCar = placeRow, placeRadio = placeRow; // the car chip's text changes with the lock, the radio chip's with the track
   const onResize = () => measure();
   globalThis.addEventListener?.('resize', onResize);
   measure();
