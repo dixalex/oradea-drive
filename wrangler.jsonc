@@ -6,9 +6,8 @@
   "compatibility_date": "2025-09-01",
   "main": "worker/oradea.js",
   "assets": { "directory": "./dist", "binding": "ASSETS" },
-  // the event counter's store: turn Analytics Engine on once in the dashboard (Workers -> Analytics Engine), then uncomment
-  // this and `events` in src/world/oradea/config.js (ORADEA.md, "Event counter"); until then /e accepts and drops
-  // "analytics_engine_datasets": [{ "binding": "EVENTS", "dataset": "oradea_drive_events" }],
+  // the event counter's store (Analytics Engine is on for the account since 2026-10-31)
+  "analytics_engine_datasets": [{ "binding": "EVENTS", "dataset": "oradea_drive_events" }],
   // the public address under the organiser's domain (zone drumulvietii.ro on this account); workers.dev keeps working
   "routes": [{ "pattern": "oradea.drumulvietii.ro", "custom_domain": true }],
   "workers_dev": true

@@ -40,8 +40,7 @@ export default {
   feedback: 'https://wa.me/40741849122',
   locale: 'ro-RO', // numbers (the HUD's money: 12.345)
   // analytics.js: the game's events to its own counter (worker/oradea.js, Workers Analytics Engine), no cookies, no GA
-  // off until Analytics Engine is on for the account (wrangler.jsonc); then uncomment, and say so on the start card (ui.js)
-  // events: { url: '/e', hosts: /^(oradea\.drumulvietii\.ro|oradea-drive\.[a-z0-9-]+\.workers\.dev)$/ },
+  events: { url: '/e', hosts: /^(oradea\.drumulvietii\.ro|oradea-drive\.[a-z0-9-]+\.workers\.dev)$/ },
   roadsterNewsAfter: 3, // main.js: the second car's news card waits until a player has found 3 sights (a later start)
   photo: { file: 'oradea-drive', a: 'oradea.', b: 'drumulvietii.ro', sub: 'ORADEA DRIVE' }, // ui/photomode.js: the photo's wordmark and file name
   source: 'https://github.com/dixalex/oradea-drive/tree/oradea',
