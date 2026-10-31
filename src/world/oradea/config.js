@@ -19,7 +19,8 @@
 //   logos: brand files drawn under another name (kit/logo.js): the cars' Everlabs plate (a Cherkasy partner) carries the
 //     organiser's logo, Drumul Vieții (public/assets/brand/oradea-plate.svg, from the NGO's LogoH-UA.svg);  logoColours: those drawn in their own colours
 //   vehicleAtlas: paints the traffic's plates, signs and ads (vehicles.js)
-//   radio: folder of the car radio's tracks.json – Oradea's live stations (audio/radio.js)
+//   radio: folder of the car radio's tracks.json (audio/radio.js); empty, and the chip hidden (vite.config.js), until the
+//     live stations in tools/oradea/radio-stations.json agree to a third-party player
 //   voices: false – no dispatcher / passenger lines (upstream's are Ukrainian; audio/engine.js drops them from the index)
 //   feedback: where the game's "Bot" links go instead of upstream's Telegram bot – a WhatsApp chat with the organiser
 //     (Drumul Vieții), for ideas, bugs and requests (ui/botlink.js; the chip and the big map's link, vite.config.js; key I,

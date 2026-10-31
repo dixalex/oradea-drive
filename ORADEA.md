@@ -44,7 +44,7 @@ updates merge cleanly. Oradea lives beside them, and one switch picks the city:
 | `src/world/oradea/savecode.js` | the save code: a line in the controls card (H) copies all progress as one text code and takes one back, since Safari deletes a site's storage after 7 days without a visit (`tests/oradea-savecode.test.mjs`) |
 | `src/world/oradea/ui.js`, `tr.js`, `src/i18n.js` | Romanian / English for upstream's Ukrainian UI: a build pass wraps each string in `__tr()` |
 | `src/world/oradea/vehicles.js`, `signs.js` | Romanian plates, bus boards, truck sides, ads and shop signs |
-| `public/assets/oradea/radio/tracks.json` | the car radio's live Oradea stations |
+| `public/assets/oradea/radio/tracks.json` | the car radio's list: empty (radio off) until the stations in `tools/oradea/radio-stations.json` agree |
 | `tools/oradea/fetch_overture.py` | the buildings OSM lacks (most hill houses): Overture Maps' Microsoft ML footprints, ODbL (`uv run --with duckdb`) |
 | `tools/oradea/fetch_heights.mjs`, `heights.py`, `heights.mjs` | measured building heights: Copernicus Urban Atlas Building Block Height 2021 (10 m) -> a 5 m grid -> storeys for every untagged house or block, fitted on the ~1,400 buildings OSM tags (OSM tags storeys on ~5 %; the upstream guess made the centre's street blocks nine-storey slabs). Login: a free account at dataspace.copernicus.eu, then `security add-generic-password -s CDSE_ORADEA -a <email> -w` |
 | `tools/oradea/canopy.py` | `canopy.bin` from Meta + WRI CHMv2 canopy heights (CC BY 4.0): street rows and yard trees grow only where real ones stand (`greenery.js` `real`) |
@@ -104,7 +104,8 @@ links, his radio songs, the Ukrainian voice lines, the Cherkasy map data and the
 - More landmarks: `tools/oradea/agents/` holds the agent brief and two unstarted cards (reformed churches and synagogues, pentecostal churches). The civic landmarks are built (`sites/civic.js`: Astoria, the palaces of Justice, Finance and the Post, the Prefecture, Lotus Center, Nymphaea, four water towers); Palatul Copiilor, Füchsl, Poynár and Lévay are not.
 
 - The dispatcher and passenger voice lines: record Romanian and English ones (`tools/audio/gen.mjs`, an ElevenLabs key).
-- Radio stations: none publishes terms for third-party players; ask before a public launch (office@radiotransilvania.ro,
+- Radio stations: none publishes terms for third-party players, so the radio is off since 2026-10-31 (empty tracks.json, the
+  chip hidden); to turn it on, copy tools/oradea/radio-stations.json back once they agree (office@radiotransilvania.ro,
   office@pluszfm.ro, contact@g-radio.ro, radiooradea.ro).
 - The play area is the 69 km² core. A bigger one needs a bigger `bbox` and `FORCE=1 npm run fetch:oradea`.
 - Trams don't stop at stations yet, and the traffic doesn't yield to them.

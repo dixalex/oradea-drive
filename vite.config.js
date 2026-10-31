@@ -56,6 +56,8 @@ const ORADEA_HEAD = `<title>Oradea Drive</title>
     :root:has(.hud-money) #lang { top: calc(2.4vh + 6px); right: calc(2.4vw + 170px); }
     #lang button { border: 0; padding: 3px 7px; background: #0d1117cc; color: #9aa4b2; cursor: pointer; }
     #lang button.on { background: #f2c14e; color: #111; }
+    /* the radio is off until the stations agree to a third-party player (ORADEA.md; the list waits in tools/oradea/radio-stations.json) */
+    .hud-radiokey, .hud-radionext { display: none !important; }
     /* a touch screen (the phone beta): the start card's keyboard keys only pushed the terms below the fold */
     @media (hover: none) and (pointer: coarse) { .consent .c-keys { display: none !important; } }</style>`;
 

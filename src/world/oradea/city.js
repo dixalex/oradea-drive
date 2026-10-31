@@ -233,7 +233,8 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
   stage('trees', 0.78, t('Mașini și oameni…', 'Cars and people…'));
   await nextFrame();
 
-  const debris = createGibs(root, (x, z, y) => collision.groundHeight(x, z, y ?? 1e4), { blood: params.has('blood') });
+  // a family and church audience: no blood, not even with ?blood (the debris still serves crashes and trees)
+  const debris = createGibs(root, (x, z, y) => collision.groundHeight(x, z, y ?? 1e4), { blood: false });
   let traffic = null, people = null, carParks = null;
   if (!params.has('notraffic')) {
     const decks = sites.filter((s) => s.deckAt);
@@ -242,8 +243,9 @@ export async function buildCity({ scene, renderer, onProgress = null, params = n
   }
   stage('traffic', 0.9, t('Oameni…', 'People…'));
   if (!params.has('nopeds')) {
+    // gibs: null – a hit pedestrian just goes, with the soft sound, and throws no body chunks (a family and church audience)
     people = guard('people', () => createPeople({ scene: root, map, ground: { heightAt, onAsphalt: ground.onAsphalt, isWater: ground.isWater, isBuilding: (x, z) => occ.get(x, z) === 1 },
-      buildings: map.buildings, traffic, gibs: debris, opts: phone ? { maxWalkers: 360, density: 0.6, radius: 170 } : {} }));
+      buildings: map.buildings, traffic, gibs: null, opts: phone ? { maxWalkers: 360, density: 0.6, radius: 170 } : {} }));
   }
   if (traffic) {
     traffic.attachSolids(collision, collision.groundHeight);
