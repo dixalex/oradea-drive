@@ -115,7 +115,8 @@ for (const m of TRENCH) {
   }
   ok(rays > 0 && hits >= rays * 0.9, `${m}: walls stop a ray across the cut (${hits}/${rays})`);
   // the edge: a car-sized box pushed at every edge point from 4 m back on the street (or the slab over a tunnel) never
-  // ends over the cut more than 0.8 m below where it started (corners where street, slab and cut meet had no wall)
+  // lands more than 1.5 m below where it started (corners where street, slab and cut meet had no wall: 4.7 m; a lane kept
+  // at the street beside a ramp drops ~1 m onto that ramp, a road)
   const D8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7071, 0.7071], [-0.7071, 0.7071], [0.7071, -0.7071], [-0.7071, -0.7071]];
   let pushes = 0, falls = 0, fallAt = null;
   const carHit = {};
@@ -132,12 +133,37 @@ for (const m of TRENCH) {
         b.x += dx * 0.2; b.z += dz * 0.2;
         if (st.openAt(b.x, b.z) === Infinity) b.y = W.hf.heightAt(b.x, b.z) + 0.05; // over the cut it keeps its height
         cw.pushBox(b, carHit);
-        const fc = st.openAt(b.x, b.z);
-        if (fc !== Infinity && s - fc > 0.8) { falls++; fallAt ??= [x, z]; break; }
+        if (st.openAt(b.x, b.z) !== Infinity && s - W.hf.heightAt(b.x, b.z) > 1.5) { falls++; fallAt ??= [x, z]; break; } // the ground it would land on
       }
     }
   }
-  ok(pushes > 0 && falls === 0, `${m}: a car pushed at the cut's edge stays on the street (${falls} fall-ins of ${pushes}${fallAt ? `, first from (${fallAt})` : ''})`);
+  ok(pushes > 0 && falls === 0, `${m}: a car pushed at the cut's edge never drops over 1.5 m (${falls} fall-ins of ${pushes}${fallAt ? `, first from (${fallAt})` : ''})`);
+  // the way in: a car driving each cut way's own line (and the street 15 m before it) is never held by a wall (a lane
+  // kept at the street where another road crosses a cut had the cut's edge wall across it: Gojdu's south mouth)
+  let held = 0, heldAt = null, steps = 0;
+  const flo = (q) => { const f = st.floorAt(q[0], q[1]); return f === Infinity ? 1e9 : f; };
+  for (const w of cut) {
+    const P = w.P.slice();
+    if (flo(P[P.length - 1]) > flo(P[0])) P.reverse(); // from its street end down (a way drawn from the tunnel out)
+    const a = P[0], b = P[1], l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    if (flo(a) > 1e8 || st.surfaceAt(a[0], a[1]) - flo(a) < 0.5) P.unshift([a[0] - (b[0] - a[0]) / l * 15, a[1] - (b[1] - a[1]) / l * 15]); // the street before it
+    let rest = 0; for (let k = 1; k < P.length; k++) rest += Math.hypot(P[k][0] - P[k - 1][0], P[k][1] - P[k - 1][1]);
+    rest -= 2.5; // the car's nose stops short of the far end (the next way may bend away)
+    const car = { x: P[0][0], y: 0, z: P[0][1], yaw: 0, hl: 2.4, hw: 0.95, h: 1.6, step: 0.35 };
+    car.y = cw.groundHeight(car.x, car.z, W.hf.heightAt(car.x, car.z) + 1) + 0.02;
+    for (let k = 1; k < P.length; k++) {
+      const [ax, az] = P[k - 1], [bx, bz] = P[k], L = Math.hypot(bx - ax, bz - az), ux = (bx - ax) / (L || 1), uz = (bz - az) / (L || 1);
+      car.yaw = Math.atan2(ux, uz);
+      for (let s = 0; s < L && rest > 0; s += 0.25, rest -= 0.25) {
+        car.x = ax + ux * s; car.z = az + uz * s; // on the line: only a wall across it can hold the car
+        car.y = cw.groundHeight(car.x, car.z, car.y + 0.4) + 0.02;
+        const px = car.x, pz = car.z; steps++;
+        cw.pushBox(car, carHit);
+        if ((car.x - px) * ux + (car.z - pz) * uz < -0.05 && cw.kindOf(carHit.id) === 'wall') { held++; heldAt ??= [px.toFixed(0), pz.toFixed(0), w.id]; }
+      }
+    }
+  }
+  ok(steps > 0 && held === 0, `${m}: no wall across a cut way's line (${held} held of ${steps}${heldAt ? `, first at (${heldAt})` : ''})`);
   // clear(): trees off the floor
   const w0 = cut[0], mid = w0.P[Math.floor(w0.P.length / 2)];
   const fa = w0.P[Math.max(0, Math.floor(w0.P.length / 2) - 1)], fb = w0.P[Math.min(w0.P.length - 1, Math.floor(w0.P.length / 2) + 1)], fl = Math.hypot(fb[0] - fa[0], fb[1] - fa[1]) || 1;

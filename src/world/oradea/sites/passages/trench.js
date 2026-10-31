@@ -393,7 +393,7 @@ export function shapeGroup(hf, map, geo, G) {
         if (!p.open || !inConvex(p.pts, x, z, 1e-6)) continue;
         const room = (k2) => (k2 ? p.way.L[p.k + 1] - p.f1 : p.way.L[p.k] - p.f0) - SLAB_MIN;
         if (pass === 0 && Math.min(room(0), room(1)) >= 2.6) { p.open = false; p.c0 = Math.min(CL, room(0)); p.c1 = Math.min(CL, room(1)); covered++; }
-        else if (pass >= 1) for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) { const i = Math.floor((x - box[0]) / KC) + dx, jj = Math.floor((z - box[1]) / KC) + dz; if (i >= 0 && jj >= 0 && i < kw && jj < kh && !keep[jj * kw + i]) { keep[jj * kw + i] = 1; kept++; } }
+        else if (pass >= 1) for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) { const i = Math.floor((x - box[0]) / KC) + dx, jj = Math.floor((z - box[1]) / KC) + dz; if (i >= 0 && jj >= 0 && i < kw && jj < kh && !keep[jj * kw + i]) { keep[jj * kw + i] = pass < 2 ? 1 : 2; kept++; } }
       }
     }
   }
@@ -410,7 +410,9 @@ export function shapeGroup(hf, map, geo, G) {
     return f < h ? f : h;
   };
   const clearMin = Math.min(...ways.filter((w) => w.tn).flatMap((w) => w.c), Infinity);
-  return { G, ways, pieces, near, floorAt, openAt, coveredAt, inOpen, fOf, cOf, surfaceAt: H0, box,
+  // a road lane (or a tram) kept at the street across an open cut (1), not a footway (2): build() puts no wall across it
+  const laneKept = (x, z) => { const c = cellOf(x, z); return c >= 0 && keep[c] === 1; };
+  return { G, ways, pieces, near, floorAt, openAt, coveredAt, inOpen, fOf, cOf, surfaceAt: H0, box, laneKept,
     stats: { lifted, maxLift: +maxLift.toFixed(2), depth: D, clearMin: +clearMin.toFixed(2), ramps, pieces: pieces.length, narrowed, covered, kept, opened } };
 }
 
@@ -526,6 +528,11 @@ function groundBuilder() {
 export function buildGroup(base, st) {
   if (!st) return null;
   const { root, solids: S, ground, detailMat } = base;
+  // the ground the car drives just inside an edge: the floor, or the street where a crossing road's lane kept its height
+  // (laneKept, shapeGroup); a retaining wall, its collider and the seal measure their drop to it, so a kept lane is not
+  // walled off
+  // (Gojdu: the tunnel ramp 1163299478 walled the road into the underpass 1163299477 at (732, -377))
+  const inner = (piece, x, z, inx, inz) => { const f = fOf(piece, x, z), ix = x + inx * 0.3, iz = z + inz * 0.3; return st.laneKept?.(ix, iz) ? Math.max(f, surf(ix, iz)) : f; };
   const t0 = performance.now(), { pieces, near, floorAt, openAt, coveredAt, fOf, cOf, box } = st;
   const surf = (x, z) => fin(st.surfaceAt(x, z)); // the street (the lattice, lifted)
   const group = Object.assign(new THREE.Group(), { name: `passage-${st.G.id}` });
@@ -629,8 +636,9 @@ export function buildGroup(base, st) {
       const oa = [ax - inx * 0.2, az - inz * 0.2], ob = [bx - inx * 0.2, bz - inz * 0.2];
       if (kind === 'retain') {
         const sa = top3(...oa), sb = top3(...ob);
-        if (Math.max(sa - fa, sb - fb) < WALL_MIN) { // a kerb face up to the walk beside it
-          top.quad([ax, fa, az], [bx, fb, bz], [bx, sb + 0.2, bz], [ax, sa + 0.2, az], [inx, 0, inz], SURF.CURB); stats.kerbs++;
+        if (Math.max(sa - inner(piece, ax, az, inx, inz), sb - inner(piece, bx, bz, inx, inz)) < WALL_MIN) {
+          if (Math.max(sa - fa, sb - fb) >= WALL_MIN) continue; // a lane kept at the street crosses here: no wall, no kerb
+          top.quad([ax, fa, az], [bx, fb, bz], [bx, sb + 0.2, bz], [ax, sa + 0.2, az], [inx, 0, inz], SURF.CURB); stats.kerbs++; // a kerb face up to the walk beside it
           continue;
         }
         const ya = sa + PAR, yb = sb + PAR, ox = -inx * PAR_T, oz = -inz * PAR_T;
@@ -662,7 +670,7 @@ export function buildGroup(base, st) {
     // colliders: one oriented box per stretch of <= 8 m. A retaining wall's stretch covers the segments drawn as a wall
     // (either end deeper than WALL_MIN) and stops at a kerb: one shallow sample used to drop the whole 8 m box, which
     // left the street open over drops of up to 4.5 m (Magheru, Parcul Traian)
-    const walled = (x, z) => kind !== 'retain' || surf(x - inx * 0.2, z - inz * 0.2) - fOf(piece, x, z) >= WALL_MIN;
+    const walled = (x, z) => kind !== 'retain' || surf(x - inx * 0.2, z - inz * 0.2) - inner(piece, x, z, inx, inz) >= WALL_MIN;
     const total = [];
     let acc = null, len = 0;
     for (let k = 1; k < pts.length; k++) {
@@ -679,7 +687,7 @@ export function buildGroup(base, st) {
       let lo = Infinity, hi = -Infinity;
       for (const [x, z] of seg) {
         const f = fOf(piece, x, z), s = surf(x - inx * 0.2, z - inz * 0.2);
-        if (kind === 'retain') { if (s - f < WALL_MIN) continue; lo = Math.min(lo, f - 0.5); hi = Math.max(hi, s + PAR); }
+        if (kind === 'retain') { if (s - inner(piece, x, z, inx, inz) < WALL_MIN) continue; lo = Math.min(lo, f - 0.5); hi = Math.max(hi, s + PAR); }
         else if (kind === 'step') { lo = Math.min(lo, f - 0.5); hi = Math.max(hi, (openAt(x - inx * 0.3, z - inz * 0.3) || f) + PAR); }
         else if (kind === 'tunnel') { lo = Math.min(lo, f - 0.5); hi = Math.max(hi, f + cOf(piece, x, z)); }
         else if (kind === 'head') { lo = Math.min(lo, f + cOf(piece, x, z)); hi = Math.max(hi, surf(x, z) + PAR); }
@@ -720,7 +728,7 @@ export function buildGroup(base, st) {
         const f = fOf(p, x, z), top = surf(ox, oz);
         // over a tunnel the wall starts above its ceiling (the slab is ~1 m deep), and a tunnel mouth stays open
         const lo = coveredAt(ox, oz) !== Infinity ? top - 0.5 : f - 0.5;
-        if (!(top - f > SEAL_DROP) || lo < f + (coveredAt(ox, oz) !== Infinity ? 3.4 : -1)) { need.push(null); continue; }
+        if (!(top - inner(p, x, z, inx, inz) > SEAL_DROP) || lo < f + (coveredAt(ox, oz) !== Infinity ? 3.4 : -1)) { need.push(null); continue; }
         need.push(crosses(x - inx * 1.2, z - inz * 1.2, x + inx * 0.3, z + inz * 0.3, top + 0.5) ? null : { s, f, top, lo });
       }
       for (let j = 0; j <= m; j++) {
