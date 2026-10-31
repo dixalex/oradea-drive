@@ -227,7 +227,7 @@ export function createMissions({ world, player, hud = null, scene, input = null 
 
   // ---------------------------------------------------------------- offers
   const offers = [];
-  let spawnT = 1, active = null, cool = 0;
+  let spawnT = CITY?.firstCallAfter ?? 1, active = null, cool = 0; // a city may let the first seconds be the city's (CITY.firstCallAfter)
   const pickType = () => {
     const have = new Set(offers.map(o => o.type));
     let tot = 0; const ok = Object.entries(TYPES).filter(([k]) => !have.has(k)); for (const [, t] of ok) tot += t.weight;

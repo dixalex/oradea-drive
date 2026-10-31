@@ -14,7 +14,8 @@
 //   busyStreets: names whose lanes get 1.4x the traffic (npc/lanes.js)
 //   pavingCentre: [x, z] the centre whose pavements are pavers, not patched asphalt (cherkasy/ground.js)
 //   places: map places (places.js);  quests: the quest book's quests (game/quests/index.js; quests.js)
-//   missionsOff: mission types the dispatcher never offers (game/missions.js TYPES keys)
+//   missionsOff: mission types the dispatcher never offers (game/missions.js TYPES keys);  firstCallAfter: seconds before
+//     the first mission call (game/missions.js; upstream rings after 1 s)
 //   peek: the phone page's 3D models, place id -> site module (peek.js, ui/peek3d.js)
 //   logos: brand files drawn under another name (kit/logo.js): the cars' Everlabs plate (a Cherkasy partner) carries the
 //     organiser's logo, Drumul Vieții (public/assets/brand/oradea-plate.svg, from the NGO's LogoH-UA.svg);  logoColours: those drawn in their own colours
@@ -89,6 +90,7 @@ export default {
   quests: [SECRETE],
   missionPlaces: true, // game/missions.js: taxi / courier / chase destinations are the city's own places (clean RO / EN names)
   missionsOff: ['mugging'], // a family and church audience: no running people down (game/missions.js)
+  firstCallAfter: 20, // the first call waits 20 s: the first seconds belong to the city (the first sight is found ~90 m from the start)
   logos: { everlabs: 'oradea-plate' }, logoColours: ['everlabs'],
   vehicleAtlas,
   radio: 'assets/oradea/radio/',
