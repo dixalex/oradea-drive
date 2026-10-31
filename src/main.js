@@ -373,6 +373,10 @@ export async function startGame({ container = document.getElementById('app') || 
   // every program compiled again on its first sight (frame one, each new site, the first take-off). Cherkasy: unchanged.
   // A phone waits longer: what is not ready at the timeout is finished inside frame one anyway, a frozen screen instead
   await warmupShaders(ctx.renderer, scene, camera, phone ? 20000 : undefined, { linear: !!CITY_CFG });
+  // a city build (Oradea) draws its first frame behind the overlay, while the start card waits: its uploads and GPU
+  // pipelines (0.8–1.2 s on a throttled phone) no longer freeze the screen right after the card. A tiny step, so the
+  // systems put the camera at the car first; ?paused skips it (scripted checks count frames from 0). Cherkasy: unchanged
+  if (CITY_CFG && !params.has('paused')) { try { ctx.step(1 / 600); } catch (err) { console.warn('[main] hidden first frame failed', err); } }
   track('game_ready', { load_ms: Math.round(performance.now()), quality: ctx.quality });
   consent.ready();
   consent.accepted.then(() => { // the loop starts only once the terms are accepted (at once for a returning player)
