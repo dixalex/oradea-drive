@@ -93,6 +93,9 @@ const read = (f) => readFileSync(root + f, 'utf8');
   // the build moves index.html's inline script into the bundle; only a 'pre' hook still edits it (the ?phone redirect)
   ok(/transformIndexHtml:\s*\{\s*order:\s*'pre'/.test(read('vite.config.js')) && read('index.html').includes('const q = new URLSearchParams(location.search), mm = '),
     'vite.config.js edits index.html before the build bundles its script, and the line it edits is still there');
+  // phones open the phone tier by default: the two lines the redirect edits must still be in index.html
+  ok(read('index.html').includes("const phone = q.has('mobile') ||") && read('index.html').includes("initAnalytics({ mode: phone ? 'map' : 'game' });")
+    && read('vite.config.js').includes("if (phone && !q.has('mobile')) { q.set('phone', '')"), 'a phone gets the game with ?phone, only ?mobile opens the map page');
   const table = (file, name) => { const s = read(file), i = s.indexOf(name), j = s.indexOf('};', i); return s.slice(i, j); };
   const post = table('src/render/post.js', 'const QUALITY = {'), sky = table('src/render/sky.js', 'const Q = {'), detail = table('src/world/oradea/city.js', 'const DETAIL = {');
   for (const q of ['phone', 'minimal']) {

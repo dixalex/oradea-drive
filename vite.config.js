@@ -1,8 +1,8 @@
 // Vite config for the fork's city builds. Without VITE_CITY it is Vite's defaults (the upstream Cherkasy game).
 // With VITE_CITY=oradea:
 //   - index.html gets the Oradea title, description, icons and share card (public/assets/oradea/og.jpg, a game shot of
-//     the Moon Church and the City Hall tower), and no Ukrainian loading text; ?phone opens the game
-//     (its phone tier) on a phone instead of the map page, and a touch screen's start card leaves out the keyboard keys;
+//     the Moon Church and the City Hall tower), and no Ukrainian loading text; a phone (and ?phone anywhere) opens
+//     the game's phone tier, ?mobile still the map page, and a touch screen's start card leaves out the keyboard keys;
 //   - a small stylesheet turns the bot chip and the big map's bot link into the WhatsApp feedback chat (config.feedback;
 //     bot/ belongs to the Cherkasy game) and hides the other bot links, and an RO / EN switch (src/i18n.js reads the
 //     choice) sits in the top-right corner;
@@ -87,8 +87,11 @@ function oradeaPage() {
         .replace('<div class="msg">Завантаження…</div>', '<div class="msg">…</div>')
         .replace('<div id="app"></div>', `<div id="app"></div>\n  ${LANG_SWITCH}`)
         .replace("'Не вдалося запустити гру: '", "(/^ro/i.test(document.documentElement.lang) ? 'Jocul nu a pornit: ' : 'The game failed to start: ')") // the RO / EN switch set the page's lang
-        // ?phone (the phone beta, src/world/oradea/phonegame.js) opens the game on a phone too, not the map page
-        .replace('const q = new URLSearchParams(location.search), mm = ', "const q = new URLSearchParams(location.search); if (q.has('phone')) q.set('desktop', ''); const mm = "),
+        // ?phone (the phone tier, src/world/oradea/phonegame.js) opens the game on any device; a phone gets it by default
+        // (the URL gains ?phone, which main.js and city.js read), and only ?mobile still opens the map page
+        .replace('const q = new URLSearchParams(location.search), mm = ', "const q = new URLSearchParams(location.search); if (q.has('phone')) q.set('desktop', ''); const mm = ")
+        .replace("const phone = q.has('mobile') ||", "let phone = q.has('mobile') ||")
+        .replace("initAnalytics({ mode: phone ? 'map' : 'game' });", "if (phone && !q.has('mobile')) { q.set('phone', ''); history.replaceState(history.state, '', '?' + String(q).replace(/=(&|$)/g, '$1') + location.hash); phone = false; }\n    initAnalytics({ mode: phone ? 'map' : 'game' });"),
     },
     closeBundle() {
       for (const p of ['assets/cherkasy', 'assets/radio', 'assets/brand/tors.svg', 'assets/brand/urban.svg', 'assets/brand/uspace.svg',

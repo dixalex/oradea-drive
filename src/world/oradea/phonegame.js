@@ -124,6 +124,7 @@ body.phone .quest-card .qc-story { font-size: 12.5px; margin: 8px 0; }
   background: rgba(12, 16, 26, .85); border: 1px solid rgba(242, 193, 78, .6); color: #e8eef7; font: 600 12.5px system-ui, sans-serif; text-align: center;
   opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; }
 .ph-pill.on { opacity: 1; transform: translate(-50%, 0); }
+.ph-pill.on a { pointer-events: auto; color: #f2c14e; }
 .ph-rotate { position: fixed; inset: 0; z-index: 30; display: none; place-content: center; gap: 10px; text-align: center; padding: 24px;
   background: rgba(8, 12, 20, .88); color: #e8eef7; font: 600 16px system-ui, sans-serif; }
 .ph-rotate i { font-style: normal; font-size: 44px; }
@@ -293,7 +294,9 @@ export function startPhone(ctx, { guard = null, ready = Promise.resolve() } = {}
     shown = true;
     if (guard?.crashed) pill(guard.floor
       ? t('Jocul a repornit singur. Grafica e deja la minimum: închide alte file și aplicații.', 'The game restarted itself. Graphics are already at the lowest: close other tabs and apps.')
-      : t(`Jocul a repornit singur: acum grafică ${NAMES[guard.level] ?? guard.level}.`, `The game restarted itself: graphics now ${NAMES[guard.level] ?? guard.level}.`), 9);
+      : t(`Jocul a repornit singur: acum grafică ${NAMES[guard.level] ?? guard.level}.`, `The game restarted itself: graphics now ${NAMES[guard.level] ?? guard.level}.`), guard.floor ? 20 : 9);
+    // phones open the game by default: one that still dies at the lowest level gets a way out to the map page
+    if (guard?.floor) pillEl.append(' ', Object.assign(doc.createElement('a'), { href: '?mobile', textContent: t('Deschide harta orașului', 'Open the city map') }));
   });
 
   return {
